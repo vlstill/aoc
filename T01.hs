@@ -10,7 +10,7 @@ import Prelude.Unicode
 import Data.Maybe
 import Data.Vector ( fromList, Vector, (!), take, drop )
 import Data.List ( sort, lines )
-import Data.Foldable ( foldMap', length )
+import Data.Foldable ( foldMap', length, toList )
 import Data.Monoid ( First ( First ), getFirst )
 
 binSearch ∷ ∀α. Ord α ⇒ Vector α → α → Maybe α
@@ -24,17 +24,29 @@ binSearch vec n
     half = l `div` 2
     halfVal = vec ! half
 
+-- O(n log n)
 sums2To ∷ ∀α. (Num α, Ord α) ⇒ α → Vector α → Maybe (α, α)
 sums2To n xs = getFirst $ foldMap' look xs
   where
     look ∷ α → First (α, α)
     look a = (a,) <$> First (binSearch xs (n - a))
 
-sums3To ∷ ∀α. (Num α, Eq α) ⇒ α → Vector α → Maybe (α, α)
-sums3To = undefined
+-- O(n²)
+sums3To ∷ ∀α. (Num α, Ord α) ⇒ α → Vector α → Maybe (α, α, α)
+sums3To n xs@(length → l) = go 0 1 (l - 1)
+  where
+    go ia@((xs !) → a) ib@((xs !) → b) ic@((xs !) → c)
+      | ib ≡ ic   = go (ia + 1) (ia + 2) (l - 1)
+      | abc ≡ n   = Just (a, b, c)
+      | abc > n   = go ia ib (ic - 1)
+      | otherwise = go ia (ib + 1) ic
+      where
+        abc = a + b + c
+
+
 
 main ∷ IO ()
 main = do
     input <- fromList . sort . (read <$>) . lines <$> getContents
     print . uncurry (*) . fromJust . sums2To 2020 $ input
-    print . uncurry (*) . fromJust . sums3To 2020 $ input
+    print . (\(a, b, c) -> a * b * c) . fromJust . sums3To 2020 $ input
