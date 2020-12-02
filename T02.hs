@@ -1,4 +1,4 @@
-{-# LANGUAGE UnicodeSyntax, ExplicitForAll, TupleSections, ScopedTypeVariables, ViewPatterns #-}
+{-# LANGUAGE UnicodeSyntax, ViewPatterns #-}
 
 module T01a where
 
@@ -26,7 +26,7 @@ validate (Policy (f, t) c) pass = f ≤ cnt ∧ cnt ≤ t
 countWith v = getSum . foldMap (Sum . fromEnum . uncurry v)
 
 validate' ∷ Policy → String → Bool
-validate' (Policy (subtract 1 -> a, subtract 1 -> b) c) pass = pass !! a ≡ c ⊻ pass !! b ≡ c
+validate' (Policy (subtract 1 → a, subtract 1 → b) c) pass = pass !! a ≡ c ⊻ pass !! b ≡ c
 
 main ∷ IO ()
 main = do
