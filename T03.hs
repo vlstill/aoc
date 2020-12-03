@@ -13,7 +13,7 @@ import Data.Vector ( fromList, Vector, (!) )
 newtype RepeatVector α = RV (Vector α) deriving ( Show )
 
 (!.) ∷ RepeatVector α → Int → α
-(RV v@(length → l)) !. n = v ! (n `mod` l)
+RV v@(length → l) !. n = v ! (n `mod` l)
 
 data MapVal = Empty | Tree deriving ( Show )
 
