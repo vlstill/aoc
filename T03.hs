@@ -1,4 +1,4 @@
-{-# LANGUAGE UnicodeSyntax, ViewPatterns, ScopedTypeVariables #-}
+{-# LANGUAGE UnicodeSyntax, ViewPatterns, ScopedTypeVariables, MultiParamTypeClasses, TypeFamilies #-}
 
 module T03 where
 
@@ -8,12 +8,15 @@ import Prelude ( IO, Int, String, Show,
 import Prelude.Unicode
 import Data.Foldable ( foldMap, length )
 import Data.Monoid
-import Data.Vector ( fromList, Vector, (!) )
+import Data.Vector ( fromList, Vector )
+import Indexable
 
 newtype RepeatVector α = RV (Vector α) deriving ( Show )
 
-(!.) ∷ RepeatVector α → Int → α
-RV v@(length → l) !. n = v ! (n `mod` l)
+instance Indexable (RepeatVector α) Int where
+    type Indexed (RepeatVector α) Int = α
+
+    RV v@(length → l) !? n = v !? (n `mod` l)
 
 data MapVal = Empty | Tree deriving ( Show )
 
@@ -38,7 +41,7 @@ mapTrace proj tm@(length → rows) (xShift, yShift) = go 0 0
   where
     go x y
       | y ≥ rows  = mempty
-      | otherwise = proj ((tm ! y) !. x) <> go (x + xShift) (y + yShift)
+      | otherwise = proj (tm ! (y, x)) <> go (x + xShift) (y + yShift)
 
 
 main ∷ IO ()
