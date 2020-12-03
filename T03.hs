@@ -2,17 +2,13 @@
 
 module T03 where
 
-import Prelude ( IO, Int, Char, String, Bool, Show, Eq, Ord, (+),
-                 pure, (.), (<$>), ($), fmap, dropWhile, span, drop, lines, words,
-                 read, uncurry, fromEnum, filter, subtract, mod, error, otherwise,
+import Prelude ( IO, Int, String, Show,
+                 (+), (.), (<$>), ($), fmap, lines, mod, error, otherwise,
                  getContents, print )
 import Prelude.Unicode
-import Data.Char ( isSpace )
 import Data.Foldable ( foldMap, length )
 import Data.Monoid
-import Data.Bool.Unicode
-import Control.Arrow
-import Data.Vector ( fromList, Vector, (!), take, drop )
+import Data.Vector ( fromList, Vector, (!) )
 
 newtype RepeatVector α = RV (Vector α) deriving ( Show )
 
@@ -31,7 +27,7 @@ parse = fromList . fmap (RV . fromList . fmap toMV) . lines
     toMV x   = error $ "parse: Invalid map character '" <> [x] <> "'"
 
 
-countTrees ∷ TreeMap → (Int, Int) -> Int
+countTrees ∷ TreeMap → (Int, Int) → Int
 countTrees tm coo = getSum $ mapTrace proj tm coo
   where
     proj Tree  = Sum 1
