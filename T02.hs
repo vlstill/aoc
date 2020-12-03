@@ -1,6 +1,6 @@
 {-# LANGUAGE UnicodeSyntax, ViewPatterns #-}
 
-module T01a where
+module T02 where
 
 import Prelude ( IO, Int, Char, String, Bool, Show, Eq, Ord,
                  pure, (.), (<$>), ($), dropWhile, span, drop, lines, words,
