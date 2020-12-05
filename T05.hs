@@ -19,7 +19,7 @@ main = do
     tickets ← parseTickets <$> getContents
     let ids = ticketIDs tickets
     print . maximum $ ids
-    print . only . filter (\x → x `notElem` ids ∧ (x + 1) `elem` ids ∧ (x - 1) `elem` ids) $ [0 .. 128 * 8]
+    print . only . filter (\x → x ∉ ids ∧ (x + 1) ∈ ids ∧ (x - 1) ∈ ids) $ [0 .. 128 * 8]
   where
     only [x] = x
     only xs  = error $ "Found more than one element: " <> show xs
