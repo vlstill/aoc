@@ -1,13 +1,13 @@
-{-# LANGUAGE UnicodeSyntax, ViewPatterns, ScopedTypeVariables, MultiParamTypeClasses, TypeFamilies, LambdaCase, TypeApplications #-}
+{-# LANGUAGE UnicodeSyntax, ViewPatterns, ScopedTypeVariables, MultiParamTypeClasses, TypeFamilies, TypeApplications #-}
 
 module T03 where
 
 import Prelude.Unicode
 import Data.Monoid
-import Data.List ( unfoldr, (\\) )
+import Data.List ( (\\) )
 import Data.Maybe
-import Control.Arrow
 import Text.Read
+import Utils
 
 data Field = BirthYear
            | IssueYear
@@ -31,12 +31,6 @@ parseField "cid" = CountryID
 parseField fi    = error $ "Invalid field " <> fi
 
 type Pass = [(Field, String)]
-
-
-splitsBy ∷ ∀α. (α → Bool) → [α] → [[α]]
-splitsBy p = unfoldr (\case
-                        [] → Nothing
-                        xs → Just . second (drop 1) $ break p xs)
 
 parsePassEntry ∷ String → (Field, String)
 parsePassEntry (break (≡ ':') → (k, ':':v)) = (parseField k, v)
