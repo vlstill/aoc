@@ -24,7 +24,9 @@ import Indexable
 
 import Debug.Trace
 
-contained ∷ ∀κ ι. (Num ι, Eq ι, Show ι) ⇒ Vector (Map Int ι) → Int → Vector ι
+type Rules ι = Vector (Map Int ι)
+
+contained ∷ ∀κ ι. (Num ι, Eq ι, Show ι) ⇒ Rules ι → Int → Vector ι
 contained !rules !what = fixpt indirectly directly
   where
     directly ∷ Vector ι
@@ -34,6 +36,12 @@ contained !rules !what = fixpt indirectly directly
     indirectly !prev = imap compose rules
       where
         compose i = foldrWithKey' (\k n s → prev ! k * n + s) (directly ! i)
+
+countBags ∷ ∀ι. Num ι ⇒ Rules ι → Int → ι
+countBags rules = go
+  where
+    go ∷ Int → ι
+    go bag = foldrWithKey' (\b n s → go b * n + s) 1 (rules ! bag)
 
 
 main ∷ IO ()
@@ -47,9 +55,11 @@ main = do
 
         rules = Vector.fromList . map snd . sort $ map ((colourCode !) *** mapKeys (colourCode !)) rules'
 
-        ct = contained rules (colourCode ! "shiny gold")
+        myBag = colourCode ! "shiny gold"
+        ct = contained rules myBag
 
     print $ count (≥ 1) ct
+    print . subtract 1 $ countBags rules myBag
   where
     parse = fmap parseLine . lines
     parseLine = (unwords . init *** parseBags) . break (≡ "contain") . words

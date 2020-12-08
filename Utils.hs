@@ -1,7 +1,8 @@
-{-# LANGUAGE UnicodeSyntax, ScopedTypeVariables, LambdaCase #-}
+{-# LANGUAGE UnicodeSyntax, ScopedTypeVariables, LambdaCase, ViewPatterns #-}
 
 module Utils where
 
+import Prelude.Unicode
 import Data.Monoid ( Sum ( Sum ), getSum )
 import Data.List ( unfoldr )
 import Control.Arrow ( second )
@@ -29,3 +30,10 @@ embrace xs = "(" ++ xs ++ ")"
 mayToList ∷ ∀α. Maybe α → [α]
 mayToList (Just x) = [x]
 mayToList Nothing  = []
+
+fixpt ∷ ∀α. Eq α ⇒ (α → α) → α → α
+fixpt f = go
+  where
+    go x@(f → x1)
+      | x ≡ x1    = x
+      | otherwise = go x1
