@@ -9,39 +9,46 @@ import Prelude.Unicode
 import Data.List
 import Data.Monoid
 import Data.Char
-import Data.Vector ( Vector, fromList )
+import Data.Either
+import Data.Vector ( Vector, fromList, (//) )
 import Data.Function ( (&) )
 import Debug.Trace
 
+import Control.Monad
 import Control.Lens ( makeLenses, Lens', (.~), (^.), (%~), view )
 
 data Instr = Nop Integer
            | Acc Integer
-           | Jmp Int
+           | Jmp Integer
            deriving ( Show, Read )
 
-data Machine = Machine { _instrs ∷ Vector Instr, _ip ∷ Int, _accum ∷ Integer }
+data Machine = Machine { _instrs ∷ Vector Instr, _ip ∷ Integer, _accum ∷ Integer }
                deriving ( Show )
 makeLenses ''Machine
 
 initMachine ∷ Vector Instr → Machine
 initMachine instrs = Machine { _instrs = instrs, _ip = 0, _accum = 0 }
 
-step ∷ Machine → Machine
-step mach = mach & case view instrs mach !? view ip mach of
-    Just (Nop _) -> next
-    Just (Acc v) -> next . (accum %~ (+ v))
-    Just (Jmp v) -> ip %~ (+ v)
-    Nothing -> error "Instruction out of range"
+step ∷ Machine → Either Integer Machine
+step mach
+  | ipcur ≥ fromIntegral (length (view instrs mach)) = Left ipcur
+  | otherwise = Right $ mach & case view instrs mach ! fromInteger ipcur of
+                    Nop _ → next
+                    Acc v → next . (accum %~ (+ v))
+                    Jmp v → ip %~ (+ v)
   where
+    ipcur = view ip mach
     next = ip %~ (+ 1)
 
-runUntilCycle ∷ Machine → Machine
+data Status = Cycled | Terminated deriving Show
+
+runUntilCycle ∷ Machine → (Status, Machine)
 runUntilCycle = go []
   where
-    go seen mach@(step → next@(view ip → nip))
-      | nip ∈ seen = mach
+    go seen mach@(step → Right next@(view ip → nip))
+      | nip ∈ seen = (Cycled, mach)
       | otherwise  = go (nip:seen) next
+    go _ mach@(step → left) = (Terminated, mach)
 
 parseCode ∷ String → Vector Instr
 parseCode = fromList . fmap parseInst . lines
@@ -49,8 +56,20 @@ parseCode = fromList . fmap parseInst . lines
     parseInst = read @Instr . unwords . htmap (htmap toUpper id) fixSign . words
     fixSign xs@('-':_) = embrace xs
     fixSign ('+':xs)   = xs
+    fixSign xs = xs
+
+fixAt ∷ Vector Instr → Int → Maybe (Vector Instr)
+fixAt vec idx = case vec ! idx of
+    Nop x → Just $ vec // [(idx, Jmp x)]
+    Jmp x → Just $ vec // [(idx, Nop x)]
+    _ → Nothing
 
 main ∷ IO ()
 main = do
-     code <- parseCode <$> getContents
-     print . view accum . runUntilCycle . initMachine $ code
+    code <- parseCode <$> getContents
+    print . view accum . snd . runUntilCycle . initMachine $ code
+    let fixed = [ res | at ← [0 .. (length code - 1)]
+                      , (Terminated, res) ← mayToList $ runUntilCycle . initMachine <$> fixAt code at
+                      ]
+    when (length fixed ≠ 1) $ print $ map (view accum) fixed 
+    print $ view accum (head fixed)

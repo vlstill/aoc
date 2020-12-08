@@ -15,6 +15,11 @@ $(TASKS:%=%.run) : %.run : %.hs %.in
 	@cat $(<:%.hs=%.in) | runhaskell $<
 	@echo
 
+$(TASKS:%=%.test) : %.test : %.hs %.test.in
+	@echo "Test $(<:T%.test=%):"
+	@cat $(<:%.hs=%.test.in) | runhaskell $<
+	@echo
+
 $(OUTS:%.out=%.check) : %.check : %.hs %.in %.out
 	@printf "Check $(<:T%.hs=%): "
 	@diff -us <(cat $(<:%.hs=%.in) | runhaskell $<) $(<:%.hs=%.out)

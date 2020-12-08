@@ -25,3 +25,7 @@ htmap _ _ [] = []
 
 embrace ∷ String → String
 embrace xs = "(" ++ xs ++ ")"
+
+mayToList ∷ ∀α. Maybe α → [α]
+mayToList (Just x) = [x]
+mayToList Nothing  = []
