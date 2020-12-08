@@ -1,4 +1,4 @@
-{-# LANGUAGE UnicodeSyntax, TypeApplications, ScopedTypeVariables, ViewPatterns, BangPatterns #-}
+{-# LANGUAGE UnicodeSyntax, TypeApplications, ScopedTypeVariables, BangPatterns #-}
 
 module T07 where
 
@@ -7,9 +7,6 @@ import Data.List
 import Data.Maybe
 import Data.Foldable ( toList )
 import Data.Char
-import Data.Tuple ( swap )
-import Data.Monoid
-import Control.Monad
 import Control.Arrow
 
 import Data.Set ( Set )
@@ -22,11 +19,9 @@ import qualified Data.Vector as Vector
 import Utils
 import Indexable
 
-import Debug.Trace
-
 type Rules ι = Vector (Map Int ι)
 
-contained ∷ ∀κ ι. (Num ι, Eq ι, Show ι) ⇒ Rules ι → Int → Vector ι
+contained ∷ ∀ι. (Num ι, Eq ι) ⇒ Rules ι → Int → Vector ι
 contained !rules !what = fixpt indirectly directly
   where
     directly ∷ Vector ι
@@ -58,7 +53,7 @@ main = do
         myBag = colourCode ! "shiny gold"
         ct = contained rules myBag
 
-    print $ count (≥ 1) ct
+    print $ count @ Int (≥ 1) ct
     print . subtract 1 $ countBags rules myBag
   where
     parse = fmap parseLine . lines
@@ -67,3 +62,4 @@ main = do
     parseBag = readBag . rtrim (\x → x ≡ "bag" ∨ x ≡ "bags") . words . rtrim (≡ '.') . ltrim isSpace
     readBag ("no":_) = Nothing
     readBag (x:xs)   = Just (unwords xs, read @Int x)
+    readBag _        = error "readBag: empty list"

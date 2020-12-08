@@ -17,7 +17,7 @@ ltrim = dropWhile
 rtrim f = reverse . ltrim f . reverse
 trim f = rtrim f . ltrim f
 
-count ∷ ∀α τ ι. (Foldable τ, Integral ι) ⇒ (α → Bool) → τ α → ι
+count ∷ ∀ι α τ. (Foldable τ, Integral ι) ⇒ (α → Bool) → τ α → ι
 count f = getSum . foldMap (Sum . fromIntegral . fromEnum . f)
 
 htmap ∷ ∀α β. (α → β) → (α → β) → [α] → [β]
