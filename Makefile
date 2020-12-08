@@ -24,4 +24,9 @@ $(OUTS:%.out=%.check) : %.check : %.hs %.in %.out
 	@printf "Check $(<:T%.hs=%): "
 	@diff -us <(cat $(<:%.hs=%.in) | runhaskell $<) $(<:%.hs=%.out)
 
+$(TASKS:%=%.bench) : %.bench : %.hs %.in
+	@echo "Bench $(<:T%.hs=%):"
+	ghc -dynamic -O2 $< -o $(<:%.hs=%) -main-is $(<:%.hs=%).main
+	cat $(<:%.hs=%.in) | time -f "%es" ./$(<:%.hs=%)
+
 .PHONY: %.run %.check
