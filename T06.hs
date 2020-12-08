@@ -1,6 +1,6 @@
 {-# LANGUAGE UnicodeSyntax #-}
 
-module T05 where
+module T06 where
 
 import Utils
 import Data.List
