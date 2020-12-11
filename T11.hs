@@ -1,4 +1,4 @@
-{-# LANGUAGE UnicodeSyntax, ScopedTypeVariables #-}
+{-# LANGUAGE UnicodeSyntax, ScopedTypeVariables, BangPatterns #-}
 
 module T11 where
 
@@ -48,7 +48,7 @@ mapMap f = imap rowMap
     rowMap x = imap (\y s → f s (x, y))
 
 step ∷ (SeatMap → Coords → Dir → Maybe Seat) → Int → SeatMap → SeatMap
-step neighbourSelect occupThresh sm = mapMap seatStep sm
+step neighbourSelect occupThresh !sm = mapMap seatStep sm
   where
     seatStep Floor _ = Floor
     seatStep Empty coo
