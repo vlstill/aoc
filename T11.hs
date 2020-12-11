@@ -1,4 +1,4 @@
-{-# LANGUAGE UnicodeSyntax, TypeApplications, TemplateHaskell, ViewPatterns, ScopedTypeVariables #-}
+{-# LANGUAGE UnicodeSyntax, ScopedTypeVariables #-}
 
 module T11 where
 
@@ -6,8 +6,6 @@ import Utils
 import Indexable
 
 import Prelude.Unicode
-import Data.List
-import Data.Maybe
 import Data.Monoid
 import Data.Vector ( Vector, fromList, imap )
 
@@ -21,6 +19,7 @@ parseMap = fromList . fmap (fromList . fmap parseSeat) . lines
     parseSeat 'L' = Empty
     parseSeat '#' = Occupied
     parseSeat '.' = Floor
+    parseSeat x   = error $ "unknow seat " <> show x
 
 type Coords = (Int, Int)
 type Dir = (Int, Int)
