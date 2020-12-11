@@ -22,13 +22,25 @@ parseMap = fromList . fmap (fromList . fmap parseSeat) . lines
     parseSeat '#' = Occupied
     parseSeat '.' = Floor
 
-neighbours ∷ ∀μ. Monoid μ ⇒ (Seat → μ) → (Int, Int) → SeatMap → μ
-neighbours proj (x, y) sm = foldMap (maybe mempty proj . at) nIdxs
+type Coords = (Int, Int)
+type Dir = (Int, Int)
+
+neighbours ∷ ∀μ. Monoid μ ⇒ (SeatMap → Coords → Dir → Maybe Seat) → (Seat → μ) → (Int, Int) → SeatMap → μ
+neighbours select proj coo sm = foldMap (maybe mempty proj . select sm coo) dirs
   where
-    nIdxs = [ (x + sx, y + sy) | sx <- sigs, sy <- sigs, (sx, sy) ≠ (0, 0) ]
+    dirs = [ (sx, sy) | sx <- sigs, sy <- sigs, (sx, sy) ≠ (0, 0) ]
     sigs = [-1, 0, 1]
 
-    at (i, j) = sm ‽ i >>= (‽ j)
+directNeight ∷  SeatMap -> Coords -> Dir -> Maybe Seat
+directNeight sm (x, y) (dx, dy) = sm ‽ (x + dx) >>= (‽ (y + dy))
+
+visibleNeigh ∷ SeatMap -> Coords -> Dir -> Maybe Seat
+visibleNeigh sm (x0, y0) (dx, dy) = go (x0 + dx, y0 + dy)
+  where
+    go (x, y) = case sm ‽ x >>= (‽ y) of
+        Nothing    → Nothing
+        Just Floor → go (x + dx, y + dy)
+        s          → s
 
 mapMap ∷ (Seat → (Int, Int) → Seat) → SeatMap → SeatMap
 mapMap f = imap rowMap
@@ -36,18 +48,19 @@ mapMap f = imap rowMap
     rowMap :: Int → Vector Seat → Vector Seat
     rowMap x = imap (\y s → f s (x, y))
 
-step ∷ SeatMap → SeatMap
-step sm = mapMap seatStep sm
+step ∷ (SeatMap → Coords → Dir → Maybe Seat) → Int → SeatMap → SeatMap
+step neighbourSelect occupThresh sm = mapMap seatStep sm
   where
     seatStep Floor _ = Floor
     seatStep Empty coo
       | occupNei coo ≡ 0 = Occupied
       | otherwise        = Empty
     seatStep Occupied coo
-      | occupNei coo ≥ 4 = Empty
-      | otherwise        = Occupied
+      | occupNei coo ≥ occupThresh = Empty
+      | otherwise                  = Occupied
 
-    occupNei coo = getSum $ neighbours (Sum . fromEnum . (≡ Occupied)) coo sm
+    occupNei coo = getSum $ neighbours neighbourSelect (Sum . fromEnum . (≡ Occupied)) coo sm
+
 
 occupied ∷ SeatMap → Int
 occupied = getSum . foldMap (foldMap (Sum . fromEnum . (≡ Occupied)))
@@ -55,4 +68,5 @@ occupied = getSum . foldMap (foldMap (Sum . fromEnum . (≡ Occupied)))
 main ∷ IO ()
 main = do
     seatMap <- parseMap <$> getContents
-    print . occupied $ fixpt step seatMap
+    print . occupied $ fixpt (step directNeight 4) seatMap
+    print . occupied $ fixpt (step visibleNeigh 5) seatMap
