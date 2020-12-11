@@ -32,11 +32,7 @@ mayToList (Just x) = [x]
 mayToList Nothing  = []
 
 fixpt ∷ ∀α. Eq α ⇒ (α → α) → α → α
-fixpt f = go
-  where
-    go x@(f → x1)
-      | x ≡ x1    = x
-      | otherwise = go x1
+fixpt f = fst . fixptn f
 
 fixptn ∷ ∀α. Eq α ⇒ (α → α) → α → (α, Int)
 fixptn f = go 1
