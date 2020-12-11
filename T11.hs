@@ -8,6 +8,7 @@ import Indexable
 import Prelude.Unicode
 import Data.Monoid
 import Data.Vector ( Vector, fromList, imap )
+import Control.Arrow
 
 data Seat = Floor | Empty | Occupied deriving ( Eq, Ord, Show )
 
@@ -67,5 +68,5 @@ occupied = getSum . foldMap (foldMap (Sum . fromEnum . (≡ Occupied)))
 main ∷ IO ()
 main = do
     seatMap <- parseMap <$> getContents
-    print . occupied $ fixpt (step directNeight 4) seatMap
-    print . occupied $ fixpt (step visibleNeigh 5) seatMap
+    print . first occupied $ fixptn (step directNeight 4) seatMap
+    print . first occupied $ fixptn (step visibleNeigh 5) seatMap

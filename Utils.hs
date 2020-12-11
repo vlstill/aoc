@@ -37,3 +37,11 @@ fixpt f = go
     go x@(f → x1)
       | x ≡ x1    = x
       | otherwise = go x1
+
+fixptn ∷ ∀α. Eq α ⇒ (α → α) → α → (α, Int)
+fixptn f = go 1
+  where
+    go ∷ Int → α → (α, Int)
+    go n x@(f → x1)
+      | x ≡ x1    = (x, n)
+      | otherwise = go (n + 1) x1
