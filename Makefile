@@ -10,23 +10,25 @@ run : $(TASKS:%=%.run)
 
 check : $(OUTS:%.out=%.check)
 
-$(TASKS:%=%.run) : %.run : %.hs %.in
-	@echo "Task $(<:T%.hs=%):"
-	@cat $(<:%.hs=%.in) | runhaskell $<
+$(TASKS:%=%.bin) : %.bin : %.hs
+	@ghc -dynamic -O2 $< -o $@ -main-is $(<:%.hs=%).main	
+
+$(TASKS:%=%.run) : %.run : %.bin %.in
+	@echo "Task $(@:T%.run=%):"
+	@cat $(<:%.bin=%.in) | ./$<
 	@echo
 
-$(TASKS:%=%.test) : %.test : %.hs %.test.in
-	@echo "Test $(<:T%.test=%):"
-	@cat $(<:%.hs=%.test.in) | runhaskell $<
+$(TASKS:%=%.test) : %.test : %.bin %.test.in
+	@echo "Test $(@:T%.test=%):"
+	@cat $(<:%.bin=%.test.in) | ./$<
 	@echo
 
-$(OUTS:%.out=%.check) : %.check : %.hs %.in %.out
-	@printf "Check $(<:T%.hs=%): "
-	@diff -us <(cat $(<:%.hs=%.in) | runhaskell $<) $(<:%.hs=%.out)
+$(OUTS:%.out=%.check) : %.check : %.bin %.in %.out
+	@printf "Check $(@:T%.check=%): "
+	@diff -us <(cat $(<:%.bin=%.in) | ./$<) $(<:%.bin=%.out)
 
-$(TASKS:%=%.bench) : %.bench : %.hs %.in
+$(TASKS:%=%.bench) : %.bench : %.bin %.in
 	@echo "Bench $(<:T%.hs=%):"
-	ghc -dynamic -O2 $< -o $(<:%.hs=%) -main-is $(<:%.hs=%).main
-	cat $(<:%.hs=%.in) | time -f "%es" ./$(<:%.hs=%)
+	cat $(<:%.bin=%.in) | time -f "%es" ./$(<:%.hs=%)
 
 .PHONY: %.run %.check
