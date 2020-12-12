@@ -2,14 +2,7 @@
 
 module T12 where
 
-import Utils
-import Indexable
-
-import Prelude.Unicode
-import Data.Monoid
-import Data.Vector ( Vector, fromList, imap )
-import Control.Arrow
-import Control.Lens ( makeLenses, (%~), (-~), (+~), view, (&) )
+import Control.Lens ( makeLenses, (%~), (-~), (+~), (.~), (*~), view, (&) )
 import Data.Default.Class
 
 import Debug.Trace
@@ -24,11 +17,16 @@ parseAction _      = error "empty action"
 data ShipPosition = ShipPosition { _eastWest ∷ Int, _northSouth ∷ Int, _heading ∷ Direction } deriving Show
 makeLenses ''ShipPosition
 
+data NaviPosition = NaviPosition { _wpEW ∷ Int, _wpNS ∷ Int, _sEW ∷ Int, _sNS ∷ Int } deriving Show
+makeLenses ''NaviPosition
+
 instance Default ShipPosition where
     def = ShipPosition { _northSouth = 0, _eastWest = 0, _heading = E }
 
-manhattanFromCenter ∷ ShipPosition → Int
-manhattanFromCenter ship = abs (view northSouth ship) + abs (view eastWest ship)
+instance Default NaviPosition where
+    def = NaviPosition { _wpEW = 10, _wpNS = 1, _sEW = 0, _sNS = 0 }
+
+manhattanBy ns ew ship = abs (view ns ship) + abs (view ew ship)
 
 navigage ∷ ShipPosition → Action → ShipPosition
 navigage ship = uncurry go
@@ -48,8 +46,30 @@ navigage ship = uncurry go
 
     rot x y = (y + x) `mod` 4
 
+navigage' ∷ NaviPosition → Action → NaviPosition
+navigage' ship = traceShowId . uncurry go
+  where
+    go ∷ Direction → Int → NaviPosition
+    go N x = ship & wpNS +~ x
+    go S x = ship & wpNS -~ x
+    go E x = ship & wpEW +~ x
+    go W x = ship & wpEW -~ x
+    go L x = ship & rotate (-x)
+    go R x = ship & rotate x
+    go F x = ship & do
+              ns ← view wpNS
+              ew ← view wpEW
+              (sNS +~ ns * x) . (sEW +~ ew * x)
+
+    rotate 0 = id
+    rotate n@(signum → s) = do
+                ns ← view wpNS
+                ew ← view wpEW
+                rotate (n - (90 * s)) . (wpNS .~ (-s) * ew) . (wpEW .~ s * ns)
+
 main ∷ IO ()
 main = do
     navigInstr ← fmap parseAction . lines <$> getContents
-    print . manhattanFromCenter $ foldl navigage def navigInstr
+    print . manhattanBy northSouth eastWest $ foldl navigage def navigInstr
+    print . manhattanBy sNS sEW $ foldl navigage' def navigInstr
     pure ()
