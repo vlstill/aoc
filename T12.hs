@@ -41,10 +41,8 @@ navigage = uncurry go
     go N x = northSouth += x
 
     rotate ∷ Int → Direction → Direction
-    rotate x@((`mod` 90) → 0) = toEnum . rot (x `div` 90) . fromEnum
+    rotate ((`divMod` 90) → (x, 0)) = toEnum . (`mod` 4) . (+ x) . fromEnum
     rotate x     = error $ "rotate: " <> show x
-
-    rot x y = (y + x) `mod` 4
 
 navigage' ∷ Action → State NaviPosition ()
 navigage' = uncurry go
