@@ -2,8 +2,9 @@
 
 module T12 where
 
-import Control.Lens ( makeLenses, Getting, (%~), (-~), (+~), (.~), view, (&) )
+import Control.Lens
 import Data.Default.Class
+import Control.Monad.State
 
 data Direction = E | S | W | N | L | R | F deriving ( Eq, Show, Read, Enum )
 type Action = (Direction, Int)
@@ -53,22 +54,25 @@ navigage' ship = uncurry go
     go S x = ship & wpNS -~ x
     go E x = ship & wpEW +~ x
     go W x = ship & wpEW -~ x
-    go L x = ship & rotate (-x)
-    go R x = ship & rotate x
-    go F x = ship & do
-              ns ← view wpNS
-              ew ← view wpEW
-              (sNS +~ ns * x) . (sEW +~ ew * x)
+    go L x = ship & execState (rotate (-x))
+    go R x = ship & execState (rotate x)
+    go F x = flip execState ship $ do
+              ns ← use wpNS
+              ew ← use wpEW
+              sNS += ns * x
+              sEW += ew * x
 
-    rotate 0 = id
+    rotate ∷ Int → State NaviPosition ()
+    rotate 0 = pure ()
     rotate n@(signum → s) = do
-                ns ← view wpNS
-                ew ← view wpEW
-                rotate (n - (90 * s)) . (wpNS .~ (-s) * ew) . (wpEW .~ s * ns)
+                ns ← use wpNS
+                ew ← use wpEW
+                wpNS .= (-s) * ew
+                wpEW .= s * ns
+                rotate (n - (90 * s))
 
 main ∷ IO ()
 main = do
     navigInstr ← fmap parseAction . lines <$> getContents
     print . manhattanBy northSouth eastWest $ foldl navigage def navigInstr
     print . manhattanBy sNS sEW $ foldl navigage' def navigInstr
-    pure ()
