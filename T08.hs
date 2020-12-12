@@ -56,6 +56,8 @@ parseCode = fromList . fmap parseInst . lines
 
 fixAt ∷ Vector Instr → Int → Maybe (Vector Instr)
 fixAt vec idx = case vec ! idx of
+    Jmp 1 → Nothing
+    Nop 1 → Nothing
     Nop x → Just $ vec // [(idx, Jmp x)]
     Jmp x → Just $ vec // [(idx, Nop x)]
     _ → Nothing
