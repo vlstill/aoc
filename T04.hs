@@ -1,6 +1,6 @@
 {-# LANGUAGE UnicodeSyntax, ViewPatterns, ScopedTypeVariables, MultiParamTypeClasses, TypeFamilies, TypeApplications #-}
 
-module T03 where
+module T04 where
 
 import Prelude.Unicode
 import Data.Monoid

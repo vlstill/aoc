@@ -1,6 +1,6 @@
 {-# LANGUAGE UnicodeSyntax, TupleSections, ScopedTypeVariables, ViewPatterns, TypeApplications #-}
 
-module T01a where
+module T01 where
 
 import Prelude ( Num (..), Integral (..), Ord ( (<), (>) ), IO, Integer,
                  ($), (<$>), (.), otherwise, read, uncurry,

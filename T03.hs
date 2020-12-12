@@ -13,8 +13,9 @@ import Indexable
 
 newtype RepeatVector α = RV (Vector α) deriving ( Show )
 
-instance Indexable (RepeatVector α) Int where
-    type Indexed (RepeatVector α) Int = α
+instance Indexable (RepeatVector α) where
+    type Index (RepeatVector α) = Int
+    type Indexed (RepeatVector α) = α
 
     RV v@(length → l) !? n = v !? (n `mod` l)
 
@@ -41,7 +42,7 @@ mapTrace proj tm@(length → rows) (xShift, yShift) = go 0 0
   where
     go x y
       | y ≥ rows  = mempty
-      | otherwise = proj (tm ! (y, x)) <> go (x + xShift) (y + yShift)
+      | otherwise = proj ((tm ! y) ! x) <> go (x + xShift) (y + yShift)
 
 
 main ∷ IO ()
