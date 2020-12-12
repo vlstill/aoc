@@ -2,10 +2,8 @@
 
 module T12 where
 
-import Control.Lens ( makeLenses, (%~), (-~), (+~), (.~), (*~), view, (&) )
+import Control.Lens ( makeLenses, Getting, (%~), (-~), (+~), (.~), view, (&) )
 import Data.Default.Class
-
-import Debug.Trace
 
 data Direction = E | S | W | N | L | R | F deriving ( Eq, Show, Read, Enum )
 type Action = (Direction, Int)
@@ -26,6 +24,7 @@ instance Default ShipPosition where
 instance Default NaviPosition where
     def = NaviPosition { _wpEW = 10, _wpNS = 1, _sEW = 0, _sNS = 0 }
 
+manhattanBy ∷ ∀σ. Getting Int σ Int → Getting Int σ Int → σ → Int
 manhattanBy ns ew ship = abs (view ns ship) + abs (view ew ship)
 
 navigage ∷ ShipPosition → Action → ShipPosition
@@ -47,7 +46,7 @@ navigage ship = uncurry go
     rot x y = (y + x) `mod` 4
 
 navigage' ∷ NaviPosition → Action → NaviPosition
-navigage' ship = traceShowId . uncurry go
+navigage' ship = uncurry go
   where
     go ∷ Direction → Int → NaviPosition
     go N x = ship & wpNS +~ x
