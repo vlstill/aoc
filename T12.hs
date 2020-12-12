@@ -28,17 +28,17 @@ instance Default NaviPosition where
 manhattanBy ∷ ∀σ. Getting Int σ Int → Getting Int σ Int → σ → Int
 manhattanBy ns ew ship = abs (view ns ship) + abs (view ew ship)
 
-navigage ∷ ShipPosition → Action → ShipPosition
-navigage ship = uncurry go
+navigage ∷ Action → State ShipPosition ()
+navigage = uncurry go
   where
-    go ∷ Direction → Int → ShipPosition
-    go F x = go (view heading ship) x
-    go R x = ship & heading %~ rotate x
-    go L x = ship & heading %~ rotate (-x)
-    go W x = ship & eastWest -~ x
-    go E x = ship & eastWest +~ x
-    go S x = ship & northSouth -~ x
-    go N x = ship & northSouth +~ x
+    go ∷ Direction → Int → State ShipPosition ()
+    go F x = use heading >>= flip go x
+    go R x = heading %= rotate x
+    go L x = heading %= rotate (-x)
+    go W x = eastWest -= x
+    go E x = eastWest += x
+    go S x = northSouth -= x
+    go N x = northSouth += x
 
     rotate ∷ Int → Direction → Direction
     rotate x@((`mod` 90) → 0) = toEnum . rot (x `div` 90) . fromEnum
@@ -46,17 +46,17 @@ navigage ship = uncurry go
 
     rot x y = (y + x) `mod` 4
 
-navigage' ∷ NaviPosition → Action → NaviPosition
-navigage' ship = uncurry go
+navigage' ∷ Action → State NaviPosition ()
+navigage' = uncurry go
   where
-    go ∷ Direction → Int → NaviPosition
-    go N x = ship & wpNS +~ x
-    go S x = ship & wpNS -~ x
-    go E x = ship & wpEW +~ x
-    go W x = ship & wpEW -~ x
-    go L x = ship & execState (rotate (-x))
-    go R x = ship & execState (rotate x)
-    go F x = flip execState ship $ do
+    go ∷ Direction → Int → State NaviPosition ()
+    go N x = wpNS += x
+    go S x = wpNS -= x
+    go E x = wpEW += x
+    go W x = wpEW -= x
+    go L x = rotate (-x)
+    go R x = rotate x
+    go F x = do
               ns ← use wpNS
               ew ← use wpEW
               sNS += ns * x
@@ -74,5 +74,5 @@ navigage' ship = uncurry go
 main ∷ IO ()
 main = do
     navigInstr ← fmap parseAction . lines <$> getContents
-    print . manhattanBy northSouth eastWest $ foldl navigage def navigInstr
-    print . manhattanBy sNS sEW $ foldl navigage' def navigInstr
+    print . manhattanBy northSouth eastWest $ execState (mapM_ navigage navigInstr) def
+    print . manhattanBy sNS sEW $ execState (mapM_ navigage' navigInstr) def
