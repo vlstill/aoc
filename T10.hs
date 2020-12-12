@@ -1,4 +1,4 @@
-{-# LANGUAGE UnicodeSyntax, TypeApplications, TemplateHaskell, ViewPatterns #-}
+{-# LANGUAGE UnicodeSyntax, TypeApplications #-}
 
 module T10 where
 
@@ -6,13 +6,19 @@ import Utils
 import Indexable
 
 import Prelude.Unicode
-import Data.List
+import Data.List ( sort )
+import Data.Map.Strict ( Map, singleton, insert, toAscList )
+import Control.Monad.State.Strict
 
 countConnections ∷ Int → [Int] → Int → Integer
-countConnections from [] (subtract from → diff) = fromIntegral . fromEnum $ diff ≥ 0 && diff ≤ 3
-countConnections from (x@(subtract from → diff):xs) to
-    | diff < 0 ∨ diff > 3 = 0
-    | otherwise = countConnections x xs to + countConnections from xs to
+countConnections from using to = execState (go (reverse (from : using))) (singleton to 1) ! from
+  where
+    go ∷ [Int] → State (Map Int Integer) ()
+    go [] = pure ()
+    go (x:xs) = do
+        options ← gets $ sum . map snd . takeWhile ((≤ (x + 3)) . fst) . toAscList
+        modify (insert x options)
+        go xs
 
 main ∷ IO ()
 main = do
@@ -20,5 +26,5 @@ main = do
     let dev = maximum adapters + 3
         rates = 0 : adapters ++ [dev]
         diffs = zipWith (-) (tail rates) rates
-    print $ count (≡ 1) diffs * count (≡ 3) diffs
+    print @Integer $ count (≡ 1) diffs * count (≡ 3) diffs
     print $ countConnections 0 adapters dev
