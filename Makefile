@@ -31,4 +31,7 @@ $(TASKS:%=%.bench) : %.bench : %.bin %.in
 	@echo "Bench $(<:T%.hs=%):"
 	cat $(<:%.bin=%.in) | time -f "%es" ./$(<:%.hs=%)
 
-.PHONY: %.run %.check
+clean :
+	rm -f *.o *.hi
+
+.PHONY: %.run %.check %.bench %.test clean
