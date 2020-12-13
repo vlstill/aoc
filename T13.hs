@@ -30,9 +30,14 @@ egcd a b = let (q, r) = a `quotRem` b
                (s, t, g) = egcd b r
            in (t, s - q * t, g)
 
+parse ∷ String → (Integer, [(Integer, Integer)])
+parse = (read @Integer *** parseBuses) . break (≡ '\n')
+  where
+    parseBuses = map (second (read @Integer)) . filter ((≠ "x") . snd) . zip [0..] . splitsBy (≡ ',')
+
 main ∷ IO ()
 main = do
-    (from, busesTS) ← (read @Integer *** map (second (read @Integer)) . filter ((≠ "x") . snd) . zip [0..] . splitsBy (≡ ',')) . break (≡ '\n') <$> getContents
+    (from, busesTS) ← parse <$> getContents
     let buses = map snd busesTS
     let dueIn x = x - (from `mod` x)
     let earliest = minimumBy (compare `on` dueIn) buses
