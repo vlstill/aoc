@@ -1,4 +1,4 @@
-{-# LANGUAGE UnicodeSyntax, TypeApplications, ScopedTypeVariables #-}
+{-# LANGUAGE UnicodeSyntax, ScopedTypeVariables #-}
 
 module T13 where
 
@@ -31,9 +31,9 @@ egcd a b = let (q, r) = a `quotRem` b
            in (t, s - q * t, g)
 
 parse ∷ String → (Integer, [(Integer, Integer)])
-parse = (read @Integer *** parseBuses) . break (≡ '\n')
+parse = (read *** parseBuses) . break (≡ '\n')
   where
-    parseBuses = map (second (read @Integer)) . filter ((≠ "x") . snd) . zip [0..] . splitsBy (≡ ',')
+    parseBuses = map (second read) . filter ((≠ "x") . snd) . zip [0..] . splitsBy (≡ ',')
 
 main ∷ IO ()
 main = do
