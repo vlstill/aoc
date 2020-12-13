@@ -3,13 +3,10 @@
 module T13 where
 
 import Utils
-import Indexable
 
 import Prelude.Unicode
-import Data.List ( sort, foldl', minimumBy )
-import Data.Map.Strict ( Map, singleton, insert, toAscList )
+import Data.List ( minimumBy )
 import Data.Function ( on )
-import Control.Monad.State.Strict
 import Control.Arrow
 import Control.Exception ( assert )
 
