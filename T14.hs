@@ -2,28 +2,22 @@
 
 module T14 where
 
-import Utils
 import Indexable
 
 import Prelude.Unicode
 
-import Data.List ( minimumBy, foldl', uncons )
-import Data.Maybe
-import Data.Function ( on )
+import Data.List ( foldl' )
 import Data.Map ( Map, empty, insert )
 import Data.Bits
 import Data.Int ( Int64 )
 import Data.Default.Class
 
 import Control.Arrow
-import Control.Exception ( assert )
 import Control.Monad.State.Strict ( execState, State )
 import Control.Lens
 
 import Text.Regex.Base ()
 import Text.Regex.PCRE ( (=~) )
-
-import Debug.Trace
 
 data Mask = M { andMask ∷ Int64, orMask ∷ Int64, xMask ∷ Int64, oMask ∷ Int64 } deriving (Eq, Show)
 
