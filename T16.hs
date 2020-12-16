@@ -7,7 +7,7 @@ import Utils
 
 import Prelude.Unicode
 import Data.Tuple ( swap )
-import Data.List ( transpose )
+import Data.List ( transpose, isPrefixOf )
 import Control.Arrow
 
 type Ticket = [Int]
@@ -19,7 +19,7 @@ contains ∷ [Range] → Int → Bool
 contains rs x = any (\(Range f t) → f ≤ x && x ≤ t) rs
 
 parse ∷ String → ([Rule], Ticket, [Ticket])
-parse = parsePatrs . splitsBy (≡ "") . lines
+parse = parsePatrs . splitsBy null . lines
   where
     parsePatrs [r, y, n] = (map parseRule r, parseTicket (y ! 1), map parseTicket (drop 1 n))
     parsePatrs x = error $ "cannot parse: " ++ show x
@@ -27,7 +27,7 @@ parse = parsePatrs . splitsBy (≡ "") . lines
     parseRule = break (≡ ':') >>> swap >>>
                 first (drop 1 >>>
                        splitsBy (≡ ' ') >>>
-                       filter ((&&) <$> (≠ "or" ) <*> (not . null)) >>>
+                       filter (\x → x ≠ "or" && not (null x)) >>>
                        map parseRange)
     parseRange = break (≡ '-') >>> second (drop 1) >>> (read *** read) >>> uncurry Range
     parseTicket = splitsBy (≡ ',') >>> map read
@@ -51,10 +51,6 @@ elimitate = fixpt elim
         prune [f] = [f]
         prune fs  = filter (∉ singletons) fs
 
-single ∷ ∀α. [α] → Maybe α
-single [x] = Just x
-single _   = Nothing
-
 main ∷ IO ()
 main = do
     (rules, your, nearby) ← parse <$> getContents
@@ -64,5 +60,5 @@ main = do
         fields' = map (map snd . filterRules rules) fieldValues
         Just fields = mapM single $ elimitate fields'
         your' = zip fields your
-        departures = map snd . filter ((≡ "departure") . head . words . fst) $ your'
+        departures = map snd . filter (("departure" `isPrefixOf`) . fst) $ your'
     print $ product departures

@@ -31,6 +31,10 @@ mayToList ∷ ∀α. Maybe α → [α]
 mayToList (Just x) = [x]
 mayToList Nothing  = []
 
+single ∷ ∀α. [α] → Maybe α
+single [x] = Just x
+single _   = Nothing
+
 fixpt ∷ ∀α. Eq α ⇒ (α → α) → α → α
 fixpt f = fst . fixptn f
 
