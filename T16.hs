@@ -1,4 +1,4 @@
-{-# LANGUAGE UnicodeSyntax, ScopedTypeVariables, ViewPatterns #-}
+{-# LANGUAGE UnicodeSyntax, ScopedTypeVariables #-}
 
 module T16 where
 
@@ -6,10 +6,8 @@ import Indexable
 import Utils
 
 import Prelude.Unicode
-
-import Data.Tuple
+import Data.Tuple ( swap )
 import Data.List ( transpose )
-
 import Control.Arrow
 
 type Ticket = [Int]
@@ -47,9 +45,11 @@ elimitate ∷ [[String]] → [[String]]
 elimitate = fixpt elim
   where
     elim ∷ [[String]] → [[String]]
-    elim fields@(filter ((≡ 1) . length) >>> map head → singletons) = map (prune singletons) fields
-    prune _         [f] = [f]
-    prune singletons fs = filter (∉ singletons) fs
+    elim fields = map prune fields
+      where
+        singletons = map head $ filter ((≡ 1) . length) fields
+        prune [f] = [f]
+        prune fs  = filter (∉ singletons) fs
 
 single ∷ ∀α. [α] → Maybe α
 single [x] = Just x
@@ -61,9 +61,8 @@ main = do
     print . sum $ filter (not . validAny rules) (concat nearby)
     let validNearby = filter (all (validAny rules)) nearby
         fieldValues = transpose validNearby
-        fields' = map (map snd) $ map (filterRules rules) fieldValues
+        fields' = map (map snd . filterRules rules) fieldValues
         Just fields = mapM single $ elimitate fields'
         your' = zip fields your
         departures = map snd . filter ((≡ "departure") . head . words . fst) $ your'
     print $ product departures
-    
