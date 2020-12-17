@@ -45,3 +45,9 @@ fixptn f = go 1
     go n x@(f → x1)
       | x ≡ x1    = (x, n)
       | otherwise = go (n + 1) x1
+
+compose ∷ ∀α. [α → α] → α → α
+compose = foldr (.) id
+
+fpow ∷ ∀α. (α → α) → Int → α → α
+fpow f n = compose (replicate n f)
