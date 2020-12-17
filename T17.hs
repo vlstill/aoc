@@ -1,4 +1,4 @@
-{-# LANGUAGE UnicodeSyntax, ScopedTypeVariables, TypeApplications, DataKinds, KindSignatures #-}
+{-# LANGUAGE UnicodeSyntax, ScopedTypeVariables, TypeApplications, DataKinds, KindSignatures, AllowAmbiguousTypes #-}
 
 module T17 where
 
@@ -48,11 +48,11 @@ step (PD state) = PD $ Set.filter active considered
         activeNeighbours = count @Int (`member` state) neightbours
         neightbours = [ zipWith (+) coo diff | diff ← diffs d, diff ≠ replicate d 0 ]
 
+activeAfterBoot ∷ ∀δ. KnownNat δ ⇒ String → Int
+activeAfterBoot = length . unPD . fpow step 6 . load @δ
+
 main ∷ IO ()
 main = do
     initial ← getContents
-    let calc ∷ ∀δ. KnownNat δ ⇒ PocketDimension δ → IO ()
-        calc = print . length . unPD . fpow step 6
-    calc $ load @3 initial
-    calc $ load @4 initial
-
+    print $ activeAfterBoot @3 initial
+    print $ activeAfterBoot @4 initial
