@@ -2,12 +2,9 @@
 
 module T17 where
 
-import Indexable
 import Utils
 
 import Prelude.Unicode
-import Data.Tuple ( swap )
-import Data.List ( transpose, isPrefixOf )
 import Data.Foldable ( toList )
 import Data.Proxy
 import Control.Arrow
