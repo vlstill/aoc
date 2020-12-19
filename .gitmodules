@@ -1,0 +1,3 @@
+[submodule "fja"]
+	path = fja
+	url = https://gitlab.fi.muni.cz/fja/eval.git
