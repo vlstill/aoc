@@ -1,6 +1,8 @@
 TASKS_HS = $(wildcard T*.hs)
-TASKS = $(TASKS_HS:%.hs=%)
+TASKS_PY = $(wildcard T*.py)
+TASKS = $(TASKS_HS:%.hs=%) $(TASKS_PY:%.py=%)
 OUTS = $(wildcard T*.out)
+PWD != pwd
 
 SHELL = bash
 
@@ -10,26 +12,30 @@ run : $(TASKS:%=%.run)
 
 check : $(OUTS:%.out=%.check)
 
-$(TASKS:%=%.bin) : %.bin : %.hs
-	@ghc -dynamic -O2 $< -o $@ -main-is $(<:%.hs=%).main	
+$(TASKS_HS:%.hs=%) : % : %.hs
+	@ghc -dynamic -O2 $< -o $@ -main-is $(<:%.hs=%).main
 
-$(TASKS:%=%.run) : %.run : %.bin %.in
+$(TASKS_PY:%.py=%) : % : %.py
+	@printf '#!/bin/sh\nPYTHONPATH=$(PWD)/fja python3 $<\n' > $@
+	@chmod +x $@
+
+$(TASKS:%=%.run) : %.run : % %.in
 	@echo "Task $(@:T%.run=%):"
-	@cat $(<:%.bin=%.in) | ./$<
+	@cat $<.in | ./$<
 	@echo
 
-$(TASKS:%=%.test) : %.test : %.bin %.test.in
+$(TASKS:%=%.test) : %.test : % %.test.in
 	@echo "Test $(@:T%.test=%):"
-	@cat $(<:%.bin=%.test.in) | ./$<
+	@cat $<.test.in | ./$<
 	@echo
 
-$(OUTS:%.out=%.check) : %.check : %.bin %.in %.out
+$(OUTS:%.out=%.check) : %.check : % %.in %.out
 	@printf "Check $(@:T%.check=%): "
-	@diff -us <(cat $(<:%.bin=%.in) | ./$<) $(<:%.bin=%.out)
+	@diff -us <(cat $<.in | ./$<) $(<:%=%.out)
 
-$(TASKS:%=%.bench) : %.bench : %.bin %.in
+$(TASKS:%=%.bench) : %.bench : % %.in
 	@echo "Bench $(<:T%.hs=%):"
-	cat $(<:%.bin=%.in) | time -f "%es" ./$(<:%.hs=%)
+	cat $<.in | time -f "%es" ./$(<:%.hs=%)
 
 clean :
 	rm -f *.o *.hi
