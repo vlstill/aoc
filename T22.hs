@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase, UnicodeSyntax, TypeApplications, ScopedTypeVariables, ViewPatterns, TupleSections #-}
+{-# LANGUAGE LambdaCase, UnicodeSyntax #-}
 
 module T22 where
 
@@ -16,8 +16,6 @@ import Data.Set ( Set, insert, member )
 import Data.Map.Strict ( Map )
 import qualified Data.Map.Strict as Map
 import Data.Foldable ( toList )
-
-import Debug.Trace
 
 play ∷ [Int] → [Int] → (Bool, [Int])
 play [] ys = (False, ys)
