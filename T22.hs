@@ -1,18 +1,14 @@
-{-# LANGUAGE LambdaCase, UnicodeSyntax #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 module T22 where
 
 import Utils
-import Indexable
 
 import Prelude.Unicode
 import Data.List ( isPrefixOf )
 import Control.Arrow
-import Control.Monad.State.Strict
 
 import Data.Set ( Set, insert, member )
-import Data.Map.Strict ( Map )
-import qualified Data.Map.Strict as Map
 import Data.Foldable ( toList )
 
 play ∷ [Int] → [Int] → (Bool, [Int])
@@ -22,8 +18,6 @@ play (x:xs) (y:ys)
   | x > y     = play (xs ++ [x, y]) ys
   | y > x     = play xs (ys ++ [y, x])
   | otherwise = error $ "play " <> show (xs, ys)
-
-type Cache = Map ([Int], [Int]) (Bool, [Int])
 
 recplay ∷ [Int] → [Int] → (Bool, [Int])
 recplay = go mempty
