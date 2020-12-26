@@ -1,6 +1,7 @@
 TASKS_HS = $(wildcard T*.hs)
 TASKS_PY = $(wildcard T*.py)
-TASKS = $(TASKS_HS:%.hs=%) $(TASKS_PY:%.py=%)
+TASKS_CPP = $(wildcard T*.cpp)
+TASKS = $(TASKS_HS:%.hs=%) $(TASKS_PY:%.py=%) $(TASKS_CPP:%.cpp=%)
 OUTS = $(wildcard T*.out)
 PWD != pwd
 
@@ -14,6 +15,9 @@ check : $(OUTS:%.out=%.check)
 
 $(TASKS_HS:%.hs=%) : % : %.hs
 	@ghc -dynamic -O2 $< -o $@ -main-is $(<:%.hs=%).main
+
+$(TASKS_CPP:%.cpp=%) : % : %.cpp
+	@clang++ -std=c++20 -O2 $< -o $@
 
 $(TASKS_PY:%.py=%) : % : %.py
 	@printf '#!/bin/sh\nPYTHONPATH=$(PWD)/fja python3 $<\n' > $@
