@@ -5,19 +5,15 @@ module T24 where
 import Utils
 
 import Prelude.Unicode
-import Data.List ( isPrefixOf )
-import Data.Int
+import Data.List ( nub )
 import Data.Maybe
 import Data.Char
 import Data.Complex
 import Data.AEq
 import Data.Function
-import Text.Read
-import Control.Arrow
+import Text.Read ( readMaybe )
 import Control.Applicative
-
-import Data.Set ( Set, insert, member )
-import Data.Foldable ( toList )
+import System.IO
 
 data Direction = E | SE | SW | W | NW | NE deriving (Eq, Show, Read, Enum)
 
@@ -50,9 +46,20 @@ flipTile flipped tile
   | tile ∈ flipped = filter (≠ tile) flipped
   | otherwise      = tile : flipped
 
+step ∷ [Vec] → [Vec]
+step orig = [ x | x ← orig, let bn = blackNeighbors x, 0 < bn && bn ≤ 2 ]
+         <> [ x | x ← next, blackNeighbors x ≡ 2 ]
+  where
+    next = nub [ x | x' ← orig, x ← neigh x', x ∉ orig ]
+
+    neigh x = map ((+ x) . dirVec) [toEnum 0 ..]
+    blackNeighbors x = count @Int (∈ orig) (neigh x)
+
 main ∷ IO ()
 main = do
     instructions ← map parse . lines <$> getContents
     let tiles = map (sum . map dirVec) instructions
         flipped = foldl flipTile [] tiles
+    hSetBuffering stdout LineBuffering
     print $ length flipped
+    mapM_ print . take 100 . zip [1..] . map length . iterate step $ step flipped
