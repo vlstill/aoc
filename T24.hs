@@ -1,19 +1,19 @@
-{-# LANGUAGE UnicodeSyntax, TypeApplications, ViewPatterns, LambdaCase, GeneralisedNewtypeDeriving #-}
+{-# LANGUAGE UnicodeSyntax, TypeApplications, LambdaCase #-}
 
 module T24 where
 
 import Utils
 
 import Prelude.Unicode
-import Data.List ( nub )
 import Data.Maybe
 import Data.Char
-import Data.Complex
-import Data.AEq
-import Data.Function
+import Data.Foldable ( toList )
 import Text.Read ( readMaybe )
 import Control.Applicative
 import System.IO
+
+import Data.Set ( Set, insert, member, notMember )
+import qualified Data.Set as Set
 
 data Direction = E | SE | SW | W | NW | NE deriving (Eq, Show, Read, Enum)
 
@@ -25,41 +25,42 @@ parse = go . map toUpper
 
     parseAndGo n xs = (: go (drop n xs)) <$> readMaybe @Direction (take n xs)
 
-newtype Vec = Vec { unVec :: Complex Double } deriving (Show, Num)
+newtype HexVec = HexVec { unHexVec :: (Int, Int) } deriving (Show, Eq, Ord)
 
-instance Eq Vec where
-  (==) = (~==) `on` unVec
+instance Semigroup HexVec where
+    HexVec (a, b) <> HexVec (c, d) = HexVec (a + c, b + d)
 
-dirVec ∷ Direction → Vec
-dirVec = Vec . \case
-          E  → 1 :+ 0
-          SE → 0.5 :+ (-v)
-          SW → (-0.5) :+ (-v)
-          W  → - unVec (dirVec E)
-          NW → - unVec (dirVec SE)
-          NE → - unVec (dirVec SW)
-  where
-    v = sqrt (1 - 0.25)
+instance Monoid HexVec where
+    mempty = HexVec (0, 0)
 
-flipTile ∷ [Vec] → Vec → [Vec]
+dirHexVec ∷ Direction → HexVec
+dirHexVec = HexVec . \case
+              E  → (1, 0)
+              SE → (0, 1)
+              SW → (-1, 1)
+              W  → (-1, 0)
+              NW → (0, -1)
+              NE → (1, -1)
+
+flipTile ∷ Set HexVec → HexVec → Set HexVec
 flipTile flipped tile
-  | tile ∈ flipped = filter (≠ tile) flipped
-  | otherwise      = tile : flipped
+  | tile `member` flipped = Set.filter (≠ tile) flipped
+  | otherwise             = tile `insert` flipped
 
-step ∷ [Vec] → [Vec]
-step orig = [ x | x ← orig, let bn = blackNeighbors x, 0 < bn && bn ≤ 2 ]
-         <> [ x | x ← next, blackNeighbors x ≡ 2 ]
+step ∷ Set HexVec → Set HexVec
+step orig = Set.filter (\x → let bn = blackNeighbors x in 0 < bn && bn ≤ 2) orig
+         <> Set.filter ((≡ 2) . blackNeighbors) next
   where
-    next = nub [ x | x' ← orig, x ← neigh x', x ∉ orig ]
+    next = Set.fromList [ x | x' ← toList orig, x ← neigh x', x `notMember` orig ]
 
-    neigh x = map ((+ x) . dirVec) [toEnum 0 ..]
-    blackNeighbors x = count @Int (∈ orig) (neigh x)
+    neigh x = map ((<> x) . dirHexVec) [toEnum 0 ..]
+    blackNeighbors x = count @Int (`member` orig) (neigh x)
 
 main ∷ IO ()
 main = do
     instructions ← map parse . lines <$> getContents
-    let tiles = map (sum . map dirVec) instructions
-        flipped = foldl flipTile [] tiles
+    let tiles = map (mconcat . map dirHexVec) instructions
+        flipped = foldl flipTile mempty tiles
     hSetBuffering stdout LineBuffering
     print $ length flipped
-    mapM_ print . take 100 . zip [1..] . map length . iterate step $ step flipped
+    print . length . (step `fpow` 100) $ flipped
