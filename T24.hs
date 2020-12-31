@@ -12,7 +12,7 @@ import Text.Read ( readMaybe )
 import Control.Applicative
 import System.IO
 
-import Data.Set ( Set, insert, member, notMember )
+import Data.Set ( Set, insert, member, notMember, delete )
 import qualified Data.Set as Set
 
 data Direction = E | SE | SW | W | NW | NE deriving (Eq, Show, Read, Enum)
@@ -44,7 +44,7 @@ dirHexVec = HexVec . \case
 
 flipTile ∷ Set HexVec → HexVec → Set HexVec
 flipTile flipped tile
-  | tile `member` flipped = Set.filter (≠ tile) flipped
+  | tile `member` flipped = tile `delete` flipped
   | otherwise             = tile `insert` flipped
 
 step ∷ Set HexVec → Set HexVec
