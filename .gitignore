@@ -22,6 +22,10 @@ cabal.project.local~
 .HTF/
 .ghc.environment.*
 
+META-INF
+*.jar
+*Kt.class
+
 *.bin
 *.in
 *.out
