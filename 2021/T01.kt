@@ -1,12 +1,10 @@
+fun Boolean.toInt() = if (this) 1 else 0
+
 fun windowed_increases(data: List<Int>, window: Int): Int {
-    var last: Int? = null
-    var count = 0
-    for (w in data.windowed(size = window).map { x -> x.sum() }) {
-        if (last != null && last < w)
-            ++count
-        last = w
-    }
-    return count
+    return data.windowed(size = window)
+               .map { x -> x.sum() }
+               .zipWithNext { a, b -> (a < b).toInt() }
+               .sum()
 }
 
 fun main() {
