@@ -20,21 +20,18 @@ $(TASKS_HS:%.hs=%) : % : %.hs
 $(TASKS_CPP:%.cpp=%) : % : %.cpp
 	@clang++ -std=c++20 -O2 $< -o $@
 
-$(TASKS_KT:%.kt=%.jar) : %.jar : %.kt
-	@kotlinc $< -include-runtime -d $@
-
-$(TASKS_PY:%.py=%) : % : %.py
-	@printf '#!/bin/sh\nPYTHONPATH=$(PWD)/fja python3 $<\n' > $@
+$(TASKS_KT:%.kt=%) : % : %.kt
+	@kotlinc $< -include-runtime -d $@.jar
+	@printf '#!/bin/sh\njava -jar $@.jar "$$@"\n' > $@
 	@chmod +x $@
 
-$(TASKS:%=%.run) :: %.run : % %.in
+$(TASKS_PY:%.py=%) : % : %.py
+	@printf '#!/bin/sh\nPYTHONPATH=$(PWD)/../fja python3 $<\n' > $@
+	@chmod +x $@
+
+$(TASKS:%=%.run) : %.run : % %.in
 	@echo "Task $(@:T%.run=%):"
 	@cat $<.in | ./$<
-	@echo
-
-$(TASKS:%=%.run) :: %.run : %.jar %.in
-	@echo "Task $(@:T%.run=%):"
-	@java -jar $< < $(<:%.jar=%.in)
 	@echo
 
 $(TASKS:%=%.test) : %.test : % %.test.in
@@ -44,7 +41,7 @@ $(TASKS:%=%.test) : %.test : % %.test.in
 
 $(OUTS:%.out=%.check) : %.check : % %.in %.out
 	@printf "Check $(@:T%.check=%): "
-	@diff -us <(cat $<.in | ./$<) $(<:%=%.out)
+	@diff -us <(cat $<.in | ./$< 2>/dev/null) $(<:%=%.out)
 
 $(TASKS:%=%.bench) : %.bench : % %.in
 	@echo "Bench $(<:T%.hs=%):"
@@ -54,3 +51,4 @@ clean :
 	rm -f *.o *.hi
 
 .PHONY: %.run %.check %.bench %.test clean
+.SUFFIXES:
