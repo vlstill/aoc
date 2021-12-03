@@ -1,10 +1,6 @@
 fun Boolean.toInt() = if (this) 1 else 0
 fun String.toInt(base: Int) = Integer.parseInt(this, base)
 
-fun get_counts(data: List<List<Int>>): List<Int> {
-    return data.reduce { a, b -> a.zip(b, { x, y -> x + y }) }
-}
-
 fun do_filtering(data: List<List<Int>>, look: Boolean): Int {
     var filtered = data;
     for (pos in 0..(data[0].size - 1) ) {
@@ -22,7 +18,7 @@ fun main() {
     val data = generateSequence(::readLine)
                   .map { x -> x.toList().map { c -> if (c == '1') 1 else 0 } }
                   .toList()
-    val counts = get_counts(data)
+    val counts = data.reduce { a, b -> a.zip(b, { x, y -> x + y }) }
 
     val larger = counts.map { c -> c > data.size / 2 }.toList()
     val gamma = larger.map { x -> if (x) "1" else "0" }.joinToString("").toInt(2)
