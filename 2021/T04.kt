@@ -41,11 +41,11 @@ fun play(boards_: List<List<List<Int?>>>, numbers: List<Int>, to_loose: Boolean)
             val board = boards[i]
             if (board != null && place(board, n)) {
                 if (!to_loose)
-                    return n * board.map { r -> r.filter { x -> x != null }.map { x -> x!! }.sum() }.sum()
+                    return score(n, board)
                 else {
                     won++
                     if (won == boards.size) {
-                        return n * board.map { r -> r.filter { x -> x != null }.map { x -> x!! }.sum() }.sum()
+                        return score(n, board)
                     }
                 }
                 boards[i] = null
