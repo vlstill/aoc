@@ -1,6 +1,6 @@
 {-# LANGUAGE TypeApplications, BangPatterns #-}
 
-module Main where
+module T06 where
 
 import Control.Arrow
 import Data.List
