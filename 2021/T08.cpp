@@ -1,12 +1,12 @@
-#include <string>
+#include <cassert>
 #include <iostream>
 #include <iterator>
-#include <sstream>
-#include <vector>
 #include <map>
-#include <string_view>
-#include <cassert>
 #include <set>
+#include <sstream>
+#include <string>
+#include <string_view>
+#include <vector>
 
 unsigned get_mask(std::string_view digit) {
     unsigned mask = 0;
@@ -18,13 +18,6 @@ unsigned get_mask(std::string_view digit) {
 }
 
 const std::vector<std::string_view> segments { "abcefg", "cf", "acdeg", "acdfg", "bcdf", "abdfg", "abdefg", "acf", "abcdefg", "abcdfg" };
-const std::vector<unsigned> isegs = []{
-        std::vector<unsigned> out;
-        for (auto dig : segments) {
-            out.push_back(get_mask(dig));
-        }
-        return out;
-    }();
 
 int decode_simple(std::string_view dig) {
     int pos = 0;
@@ -78,8 +71,6 @@ struct Decoder {
             }
         }
 
-        std::cerr << "for " << digit << " got mask " << bin(mask) << " candidates " << candidates << '\n';
-
         for (char brokenseg : digit)
             mapping[brokenseg - 'a'] &= mask;
 
@@ -101,8 +92,6 @@ struct Decoder {
 
         std::set<int> got;
         decrec(digit, "", [&got](int val) { got.insert(val); } );
-        std::copy(got.begin(), got.end(), std::ostream_iterator<int>(std::cerr, " "));
-        std::cerr << '\n';
         return got;
     }
     int decode(std::string_view digit) {
@@ -153,22 +142,15 @@ int main() {
         std::vector<std::string> digits(std::istream_iterator<std::string>{ss},
                                         std::istream_iterator<std::string>{});
 
-        std::cerr << line << '\n';
         long accum = 0;
         Decoder dec(std::vector(std::istream_iterator<std::string>{sf},
                                 std::istream_iterator<std::string>{}));
         for (auto dig : digits) {
             accum *= 10;
-            auto simple = decode_simple(dig);
-            if ( simple >= 0 ) {
+            if (decode_simple(dig) >= 0)
                 ++easy;
-                accum += simple;
-            } else {
-                std::cerr << dig << '\n';
-                accum += dec.decode(dig);
-            }
+            accum += dec.decode(dig);
         }
-        std::cerr << accum << '\n';
         sum += accum;
     }
     std::cout << easy << '\n';
