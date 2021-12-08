@@ -3,7 +3,7 @@ TASKS_PY = $(wildcard T*.py)
 TASKS_CPP = $(wildcard T*.cpp)
 TASKS_KT = $(wildcard T*.kt)
 TASKS = $(TASKS_HS:%.hs=%) $(TASKS_PY:%.py=%) $(TASKS_CPP:%.cpp=%) $(TASKS_KT:%.kt=%)
-OUTS = $(wildcard T*.out)
+OUTS = $(wildcard T*.out.check)
 PWD != pwd
 
 SHELL = bash
@@ -12,7 +12,7 @@ all : run check
 
 run : $(TASKS:%=%.run)
 
-check : $(OUTS:%.out=%.check)
+check : $(OUTS:%.out.check=%.check)
 
 $(TASKS_HS:%.hs=%) : % : %.hs
 	@ghc -dynamic -O2 $< -o $@ -main-is $(<:%.hs=%).main
@@ -24,6 +24,7 @@ $(TASKS_KT:%.kt=%) : % : %.kt
 	@kotlinc $< -include-runtime -d $@.jar
 	@printf '#!/bin/sh\njava -jar $@.jar "$$@"\n' > $@
 	@chmod +x $@
+	@[ -f $@.out.check ] && touch $@.out.check
 
 $(TASKS_PY:%.py=%) : % : %.py
 	@printf '#!/bin/sh\nPYTHONPATH=$(PWD)/../fja python3 $<\n' > $@
@@ -39,9 +40,9 @@ $(TASKS:%=%.test) : %.test : % %.test.in
 	@cat $<.test.in | ./$<
 	@echo
 
-$(OUTS:%.out=%.check) : %.check : % %.in %.out
+$(OUTS:%.out.check=%.check) : %.check : % %.in %.out.check
 	@printf "Check $(@:T%.check=%): "
-	@diff -us <(cat $<.in | ./$< 2>/dev/null) $(<:%=%.out)
+	@diff -us <(cat $<.in | ./$< 2>/dev/null) $(<:%=%.out.check)
 
 $(TASKS:%=%.bench) : %.bench : % %.in
 	@echo "Bench $(<:T%.hs=%):"
