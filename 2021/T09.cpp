@@ -54,11 +54,26 @@ struct Map {
     size_t rowlength = 0;
 };
 
+long get_basin_size(auto &map, int x₀, int y₀) {
+    std::set<std::pair<int, int>> seen;
+    auto go = [&](auto go, int x, int y) -> void {
+        map.neighbors(x, y, [&](auto val, auto nx, auto ny) {
+            if (val != 9 && !seen.contains({nx, ny})) {
+                seen.emplace(nx, ny);
+                go(go, nx, ny);
+            }
+        });
+    };
+    go(go, x₀, y₀);
+    std::cerr << "basin " << seen.size();
+    return seen.size();
+}
+
 int main() {
     Map map(std::cin);
 
     long risk = 0;
-    long basin_size = 1;
+    std::multiset< int > basin_sizes;;
     map.enumerate([&](auto val, auto x, auto y) {
         bool is_min = true;
         std::cerr << "lp" << val << " at " << x << " " << y;
@@ -69,8 +84,16 @@ int main() {
         if (is_min) {
             std::cerr << " TAKEN";
             risk += val + 1;
+            basin_sizes.insert(get_basin_size(map, x, y));
         }
         std::cerr << '\n';
     });
     std::cout << risk << '\n';
+    auto back = std::prev(basin_sizes.end());
+    assert(basin_sizes.size() >= 3);
+    for (auto v : basin_sizes) {
+        std::cerr << v << ' ';
+    }
+    std::cerr << '\n';
+    std::cout << *back * *std::prev(back) * *std::prev(back, 2) << '\n';
 }
