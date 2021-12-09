@@ -65,7 +65,6 @@ long get_basin_size(auto &map, int x₀, int y₀) {
         });
     };
     go(go, x₀, y₀);
-    std::cerr << "basin " << seen.size();
     return seen.size();
 }
 
@@ -76,24 +75,16 @@ int main() {
     std::multiset< int > basin_sizes;;
     map.enumerate([&](auto val, auto x, auto y) {
         bool is_min = true;
-        std::cerr << "lp" << val << " at " << x << " " << y;
         map.neighbors(x, y, [&](auto nval, auto nx, auto ny) {
-            std::cerr << " [" << nx << ", " << ny << "]";
             is_min = is_min && nval > val;
         });
         if (is_min) {
-            std::cerr << " TAKEN";
             risk += val + 1;
             basin_sizes.insert(get_basin_size(map, x, y));
         }
-        std::cerr << '\n';
     });
     std::cout << risk << '\n';
     auto back = std::prev(basin_sizes.end());
     assert(basin_sizes.size() >= 3);
-    for (auto v : basin_sizes) {
-        std::cerr << v << ' ';
-    }
-    std::cerr << '\n';
     std::cout << *back * *std::prev(back) * *std::prev(back, 2) << '\n';
 }
