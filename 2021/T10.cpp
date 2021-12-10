@@ -18,12 +18,18 @@ std::map< char, int > points = { {')', 3 },
                                  {']', 57 },
                                  {'}', 1197 },
                                  {'>', 25137 } };
+std::map< char, int > points2 = { {')', 1 },
+                                 {']', 2 },
+                                 {'}', 3 },
+                                 {'>', 4 } };
 
 int main() {
     std::string line;
     long score = 0;
+    std::vector< long > scores;
     while (std::getline(std::cin, line)) {
         std::vector< char > stack;
+        bool corrupted = false;
         for (char c : line) {
             if (close.contains(c)) {
                 stack.push_back(close[c]);
@@ -33,9 +39,21 @@ int main() {
                 stack.pop_back();
                 if (top != c) {
                     score += points[c];
+                    corrupted = true;
+                    break;
                 }
             }
         }
+        if (!corrupted) {
+            long score_complete = 0;
+            for (auto it = stack.rbegin(), e = stack.rend(); it != e; ++it) {
+                score_complete *= 5;
+                score_complete += points2[*it];
+            }
+            scores.push_back(score_complete);
+        }
     }
     std::cout << score << '\n';
+    std::sort(scores.begin(), scores.end());
+    std::cout << scores[scores.size() / 2] << '\n';
 }
