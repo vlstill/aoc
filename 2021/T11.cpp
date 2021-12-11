@@ -1,4 +1,6 @@
 #include <cassert>
+#include <algorithm>
+#include <numeric>
 #include <iostream>
 #include <iterator>
 #include <map>
@@ -61,7 +63,7 @@ int main() {
     long flashes = 0;
     Map map(std::cin);
 
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 1; /*i <= 100*/; ++i) {
         // step
         std::deque<std::pair<int, int>> flash;
         map.enumerate([&](auto &val, auto x, auto y) {
@@ -84,7 +86,8 @@ int main() {
             if (val >= 10)
                 val = 0;
         });
-        std::cerr << (i + 1) << ": " <<  flashes << '\n';
+        // std::cerr << i << ": " <<  flashes << '\n';
+        /*
         int j = 0;
         for (auto val : map.map) {
             std::cerr << val;
@@ -93,6 +96,12 @@ int main() {
                 std::cerr << '\n';
         }
         std::cerr << '\n';
+        */
+        if (i == 100)
+            std::cout << flashes << std::endl;
+        if (std::accumulate(map.map.begin(), map.map.end(), 0l, [](long a, long b) { return a + b; }) == 0) {
+            std::cout << i << '\n';
+            break;
+        }
     }
-    std::cout << flashes << '\n';
 }
