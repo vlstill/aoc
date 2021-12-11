@@ -50,11 +50,6 @@ struct Decoder {
         std::fill(mapping.begin(), mapping.end(), 0b1111111);
         for (auto digit : digits) {
             prune(digit);
-            std::cerr << 'P' << digit << ' ' << std::hex;
-            for (auto m : mapping) {
-                std::cerr << bin(m) << ' ';
-            }
-            std::cerr << std::dec << '\n';
         }
     }
 
