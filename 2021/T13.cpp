@@ -26,7 +26,6 @@ struct Map {
             int x, y;
             char _comma;
             ss >> x >> _comma >> y;
-            std::cerr << line << ' ' << x << ' ' << y << '\n';
             points.emplace_back(x, y);
             max_x = std::max(max_x, x);
             max_y = std::max(max_y, y);
@@ -75,25 +74,17 @@ struct Map {
         out << '\n';
     }
 
-    Map fold_x(int fold) {
-        Map out(rows(), fold);
+    Map fold(char axis, int fold) {
+        assert(axis == 'x' || axis == 'y');
+        Map out(axis == 'x' ? rows() : fold, axis == 'x' ? fold : cols());
         enumerate([&](auto val, auto x, auto y) {
-            if (x > fold) {
-                out[{fold - (x - fold), y}] |= val;
-            } else {
+            if ((axis == 'x' && x <= fold) || (axis == 'y' && y <= fold)) {
                 out[{x, y}] |= val;
-            }
-        });
-        return out;
-    }
-
-    Map fold_y(int fold) {
-        Map out(fold, cols());
-        enumerate([&](auto val, auto x, auto y) {
-            if (y > fold) {
-                out[{x, fold - (y - fold)}] |= val;
             } else {
-                out[{x, y}] |= val;
+                if (axis == 'x')
+                    out[{fold - (x - fold), y}] |= val;
+                else
+                    out[{x, fold - (y - fold)}] |= val;
             }
         });
         return out;
@@ -109,19 +100,12 @@ struct Map {
 int main() {
     Map paper(std::cin);
 
-    for (int i = 0; ; ++i) {
-        std::string line;
-        if (!std::getline(std::cin, line)) {
-            break;
-        }
+    std::string line;
+    for (int i = 0; std::getline(std::cin, line); ++i) {
         auto eq = line.find('=');
         auto axis = line[eq - 1];
         auto val = std::stoi(line.substr(eq + 1));
-        std::cerr << axis << '=' << val << '\n';
-        if (axis == 'x')
-            paper = paper.fold_x(val);
-        else
-            paper = paper.fold_y(val);
+        paper = paper.fold(axis, val);
 
         if (i == 0) {
             long visible_1 = 0;
@@ -131,5 +115,5 @@ int main() {
             std::cout << visible_1 << '\n';
         }
     }
-    paper.dump();
+    paper.dump(std::cout);
 }
