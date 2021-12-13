@@ -47,13 +47,10 @@ int main() {
     long path_count = 0;
     long path_with_revisit_count = 0;
 
-    auto go = [&](auto go, int start, int end, std::set<int> visited, std::vector<int> trace,
+    auto go = [&](auto go, int start, int end, std::set<int> visited,
                   std::optional<int> revisit) -> void
     {
-        trace.push_back(start);
         if (start == end) {
-            std::copy(trace.begin(), trace.end(), std::ostream_iterator<int>(std::cerr, " → "));
-            std::cerr << '\n';
             path_with_revisit_count++;
             if (!revisit.has_value())
                 path_count++;
@@ -69,10 +66,10 @@ int main() {
             visited.insert(start);
         }
         for (auto succ : successors[start]) {
-            go(go, succ, end, visited, trace, revisit);
+            go(go, succ, end, visited, revisit);
         }
     };
-    go(go, 0, 1, {}, {}, std::nullopt);
+    go(go, 0, 1, {}, std::nullopt);
 
     std::cout << path_count << '\n';
     std::cout << path_with_revisit_count << '\n';
