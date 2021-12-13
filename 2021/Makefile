@@ -18,7 +18,7 @@ $(TASKS_HS:%.hs=%) : % : %.hs
 	@ghc -dynamic -O2 $< -o $@ -main-is $(<:%.hs=%).main
 
 $(TASKS_CPP:%.cpp=%) : % : %.cpp
-	@clang++ -std=c++20 -O2 $< -o $@
+	@clang++ -std=c++20 -O2 -g $< -o $@
 
 $(TASKS_KT:%.kt=%) : % : %.kt
 	@kotlinc $< -include-runtime -d $@.jar
