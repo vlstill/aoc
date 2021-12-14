@@ -61,59 +61,36 @@ int main() {
 	inserts[src] = line.back();
     }
 
-    for (auto [k, v] : inserts)
-	std::cerr << k << " → " << v << '\n';
-
     std::map<std::string, long> polypairs;
     for (auto it = templ.begin(), e = std::prev(templ.end()); it != e; ++it) {
 	polypairs[std::string{*it, *std::next(it)}] = 1;
     }
 
-    dump(polypairs);
+    auto do_pairs = [&]() {
+	std::map<char, long> counts;
+	for (auto [k, v] : polypairs) {
+	    counts[k[0]] += v;
+	    counts[k[1]] += v;
+	}
+	counts[templ.front()]++;
+	counts[templ.back()]++;
+
+	{
+	    long min = std::numeric_limits<long>::max(), max = 0;
+	    for (auto [k, v] : counts) {
+		min = std::min(v, min);
+		max = std::max(v, max);
+	    }
+
+	    std::cout << max / 2 - min / 2 << '\n';
+	}
+    };
+
     for (int i = 1; i <= 40; ++i) {
 	polypairs = step(polypairs, inserts);
-	std::cerr << i << '.'; dump(polypairs);
+	if (i == 10)
+	    do_pairs();
     }
-
-    std::map<char, long> counts;
-    for (auto [k, v] : polypairs) {
-	counts[k[0]] += v;
-	counts[k[1]] += v;
-    }
-    counts[templ.front()]++;
-    counts[templ.back()]++;
-
-    {
-	long min = std::numeric_limits<long>::max(), max = 0;
-	for (auto [k, v] : counts) {
-	    min = std::min(v, min);
-	    max = std::max(v, max);
-	    std::cerr << k << " = " << v << '\n';
-	}
-
-	std::cout << max / 2 - min / 2 << '\n';
-    }
-
-    // N B C C N B B B C B H C B
-    // NBBBCNCCNBBNBNBBCHBHHBCHB
-    // N B B B C N C C N B B N B N B B C H B H H B C H B
-    // NBBNBNBBCCNBCNCCNBBNBBNBBBNBBNBBCBHCBHHNHCBBCBHCB
-    // --B****BCCNBCNCC--B**B--BB--B**BCBHCBHHNHCBBCBHCB
+    do_pairs();
 
 }
-
-/*
-    for (int i = 1; i <= 30; ++i) {
-	step(polymer, inserts);
-    }
-    {
-	long min = std::numeric_limits<long>::max(), max = 0;
-	for (auto [k, v] : counts) {
-	    min = std::min(v, min);
-	    max = std::max(v, max);
-	    std::cerr << k << " = " << v << '\n';
-	}
-	std::cout << max - min << '\n';
-    }
-}
-*/
