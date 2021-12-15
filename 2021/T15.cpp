@@ -74,8 +74,7 @@ struct Map {
     size_t rowlength = 0;
 };
 
-int main() {
-    Map map(std::cin);
+void find_risk(Map map) {
     Map risk(map.cols(), map.rows());
     std::fill(risk.map.begin(), risk.map.end(), std::numeric_limits<long>::max() - 100);
     risk[{risk.cols() - 1, risk.rows() - 1}] = 0;
@@ -96,4 +95,16 @@ int main() {
 	}
     }
     std::cerr << risk[{0,0}] << '\n';
+}
+
+int main() {
+    Map map(std::cin);
+    find_risk(map);
+
+    Map map2(map.cols() * 5, map.rows() * 5);
+    map2.enumerate([&](auto &val, auto x, auto y) {
+	val = map[{x % map.cols(), y % map.rows()}] + (x / map.cols()) + (y / map.rows());
+	val = (val - 1) % 9 + 1;
+    });
+    find_risk(map2);
 }
