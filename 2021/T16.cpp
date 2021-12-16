@@ -92,19 +92,18 @@ BitVector load(std::istream &is) {
 	} else {
 	    val = ch - '0';
 	}
-	out.emplace_back(val / 8);
-	out.emplace_back((val % 8) / 4);
-	out.emplace_back((val % 4) / 2);
-	out.emplace_back(val % 2);
+	for (int i = 16; i >= 2; i /= 2) {
+	    out.emplace_back((val % i) / (i / 2));
+	}
     }
     return out;
 }
 
 using BIt = BitVector::const_iterator;
 
-long slice_num(BIt from, BIt to) {
+long consume_num(BIt &from, int len) {
     long out = 0;
-    for (; from != to; ++from) {
+    for (; len > 0; --len, ++from) {
 	out *= 2;
 	out += int(*from);
     }
@@ -112,38 +111,33 @@ long slice_num(BIt from, BIt to) {
 }
 
 Packet decode(BIt &bit) {
-    int version = slice_num(bit, bit + 3);
-    int type = slice_num(bit + 3, bit + 6);
-    bit += 6;
+    int version = consume_num(bit, 3);
+    int type = consume_num(bit, 3);
 
     if (type == 4) {
 	long num = 0;
-	while (*bit) {
+	while (consume_num(bit, 1)) {
 	    num *= 16;
-	    num += slice_num(bit + 1, bit + 5);
-	    bit += 5;
+	    num += consume_num(bit, 4);
 	}
 	num *= 16;
-	num += slice_num(bit + 1, bit + 5);
-	bit += 5;
+	num += consume_num(bit, 4);
 	std::cerr << "lit " << version << ' ' << num << '\n';
 	return Packet{version, num};
     }
     Packet p(version, type);
     std::cerr << "op " << version << ' ' << type << " (\n";
-    if (!*bit) {
-	long len = slice_num(bit + 1, bit + 16);
+    if (!consume_num(bit, 1)) {
+	long len = consume_num(bit, 15);
 	std::cerr << "len = " << len << '\n';
-	bit += 16;
 	auto start = bit;
 	while (bit - start < len) {
 	    p.op.subs.emplace_back(std::make_unique<Packet>(decode(bit)));
 	}
     }
     else {
-	long num = slice_num(bit + 1, bit + 12);
+	long num = consume_num(bit, 11);
 	std::cerr << "num = " << num << '\n';
-	bit += 12;
 	for (int i = 0; i < num; ++i) {
 	    p.op.subs.emplace_back(std::make_unique<Packet>(decode(bit)));
 	}
@@ -167,12 +161,6 @@ auto fold1(auto &what, auto acc) {
 
 int main() {
     BitVector raw_packet = load(std::cin);
-    /*
-    for (int v : raw_packet) {
-	std::cerr << v;
-    }
-    std::cerr << '\n';
-    */
     auto packet = decode(raw_packet);
 
     long versions = 0;
@@ -191,5 +179,5 @@ int main() {
 		  case 7: return long(subs[0] == subs[1]);
 		  default: __builtin_unreachable();
 	      }
-	  });
+	  }) << '\n';
 }
