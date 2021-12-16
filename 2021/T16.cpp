@@ -73,6 +73,12 @@ auto walk(Packet &p, auto lit, auto op) {
 	    walk<T>(*s, lit, op);
 	}
 	return op(p.version, p.type);
+    } else {
+	std::vector<T> subres;
+	for (auto &s : p.op.subs) {
+	    subres.emplace_back(walk<T>(*s, lit, op));
+	}
+	return op(p.version, p.type, subres);
     }
 }
 
@@ -151,6 +157,14 @@ Packet decode(const BitVector &bits) {
     return decode(start);
 }
 
+auto fold(auto &what, auto base, auto acc) {
+    return std::accumulate(what.begin(), what.end(), base, acc);
+}
+
+auto fold1(auto &what, auto acc) {
+    return std::accumulate(std::next(what.begin()), what.end(), *what.begin(), acc);
+}
+
 int main() {
     BitVector raw_packet = load(std::cin);
     /*
@@ -163,5 +177,19 @@ int main() {
 
     long versions = 0;
     walk(packet, [&](int v, long) { versions += v; }, [&](int v, int) { versions += v; });
-    std::cerr << versions << '\n';
+    std::cout << versions << '\n';
+
+    std::cout << walk<long>(packet, [](int, long val) { return val; },
+	  [](int, int t, auto subs) {
+	      switch (t) {
+		  case 0: return fold(subs, 0l, [](auto a, auto b) { return a + b; });
+		  case 1: return fold(subs, 1l, [](auto a, auto b) { return a * b; });
+		  case 2: return fold1(subs, [](auto a, auto b) { return std::min(a, b); });
+		  case 3: return fold1(subs, [](auto a, auto b) { return std::max(a, b); });
+		  case 5: return long(subs[0] > subs[1]);
+		  case 6: return long(subs[0] < subs[1]);
+		  case 7: return long(subs[0] == subs[1]);
+		  default: __builtin_unreachable();
+	      }
+	  });
 }
