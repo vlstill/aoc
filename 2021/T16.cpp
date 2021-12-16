@@ -116,12 +116,12 @@ Packet decode(BIt &bit) {
 
     if (type == 4) {
 	long num = 0;
-	while (consume_num(bit, 1)) {
+	bool header;
+	do {
+	    header = consume_num(bit, 1);
 	    num *= 16;
 	    num += consume_num(bit, 4);
-	}
-	num *= 16;
-	num += consume_num(bit, 4);
+	} while (header);
 	std::cerr << "lit " << version << ' ' << num << '\n';
 	return Packet{version, num};
     }
