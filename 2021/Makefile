@@ -14,6 +14,12 @@ run : $(TASKS:%=%.run)
 
 check : $(OUTS:%.out.check=%.check)
 
+%.in : %.sed %.in.raw
+	@sed -f $^ > $@
+
+%.test.in : %.sed %.test.in.raw
+	@sed -f $^ > $@
+
 $(TASKS_HS:%.hs=%) : % : %.hs
 	@ghc -dynamic -O2 $< -o $@ -main-is $(<:%.hs=%).main
 
