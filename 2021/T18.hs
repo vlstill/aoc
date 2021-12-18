@@ -106,3 +106,5 @@ reprt (Node x y) = "(" ++ reprt x ++ ", " ++ reprt y ++ ")"
 main = do
     numbers <- fmap (read @Tree) . lines <$> getContents
     print . mag $ go numbers
+
+    print . maximum $ [mag (go [a, b]) | a <- numbers, b <- numbers, a /= b]
