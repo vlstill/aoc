@@ -21,10 +21,10 @@ check : $(OUTS:%.out.check=%.check)
 	@sed -f $^ > $@
 
 $(TASKS_HS:%.hs=%) : % : %.hs
-	@ghc -dynamic -O2 $< -o $@ -main-is $(<:%.hs=%).main
+	@flock $< ghc -dynamic -O2 $< -o $@ -main-is $(<:%.hs=%).main
 
 $(TASKS_CPP:%.cpp=%) : % : %.cpp
-	@g++ -std=c++20 -O2 -g -Werror=uninitialized $< -o $@
+	@flock $< g++ -std=c++20 -O2 -g -Werror=uninitialized $< -o $@
 
 $(TASKS_KT:%.kt=%) : % : %.kt
 	@kotlinc $< -include-runtime -d $@.jar
