@@ -53,21 +53,21 @@ set t (TZip back _) = TZip back t
 reduce :: Tree -> Tree
 reduce t = case red (zipper t) of
               Left t'  -> reduce (unzipper t')
-              Right t' -> unzipper t'
+              Right _  -> t
   where
     red z = tryExplode z >> trySplit z
 
-trySplit :: TZip -> Either TZip TZip
+trySplit :: TZip -> Either TZip ()
 trySplit z@(TZip _ (Node _ _)) = trySplit (goL z) >> trySplit (goR z)
 trySplit z@(TZip _ (Leaf v))
   | v >= 10                    = Left $ split z
-  | otherwise                  = Right z
+  | otherwise                  = Right ()
 
-tryExplode :: TZip -> Either TZip TZip
+tryExplode :: TZip -> Either TZip ()
 tryExplode z@(TZip _ (Node _ _))
   | depth z >= 4 = Left $ explode z
   | otherwise    = tryExplode (goL z) >> tryExplode (goR z)
-tryExplode z@(TZip _ (Leaf _)) = Right z
+tryExplode z@(TZip _ (Leaf _)) = Right ()
 
 explode :: TZip -> TZip
 explode z@(TZip _ (Node (Leaf l) (Leaf r))) = set (Leaf 0) $ onNextR (add r) $ onNextL (add l) z
