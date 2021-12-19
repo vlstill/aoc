@@ -20,45 +20,54 @@
 #include <type_traits>
 
 struct Vector {
-    int x = 0, y = 0, z = 0;
+    Vector() : _data{0, 0, 0} { }
+    Vector(int x, int y, int z) : _data{x, y, z} { }
 
-    int sum() const { return x + y + z; }
-    int asum() const { return std::abs(x) + std::abs(y) + std::abs(z); }
-    int amax() const { return std::max(std::abs(x), std::max(std::abs(y), std::abs(z))); }
+    std::array<int, 3> _data;
+    int x() const { return _data[0]; }
+    int y() const { return _data[1]; }
+    int z() const { return _data[2]; }
+
+    int sum() const { return x() + y() + z(); }
+    int asum() const { return std::abs(x()) + std::abs(y()) + std::abs(z()); }
+    int amax() const { return std::max(std::abs(x()), std::max(std::abs(y()), std::abs(z()))); }
 
     Vector operator+(const Vector &v) const {
-        return {x + v.x, y + v.y, z + v.z};
+        return {x() + v.x(), y() + v.y(), z() + v.z()};
     }
 
     Vector operator*(int val) const {
-        return {x * val, y * val, z * val};
+        return {x() * val, y() * val, z() * val};
     }
 
     friend std::ostream &operator<<(std::ostream &out, const Vector &v) {
-        out << '[' << v.x << ',' << v.y << ',' << v.z << ']';
+        out << '[' << v.x() << ',' << v.y() << ',' << v.z() << ']';
         return out;
     }
 };
 
 struct Point {
-    int x = 0, y = 0, z = 0;
+    Point() : _data{0, 0, 0} { }
+    Point(int x, int y, int z) : _data{x, y, z} { }
+    explicit Point(Vector v) : _data(v._data) { }
 
-    Point() { }
-    Point(int x, int y, int z) : x(x), y(y), z(z) { }
-    explicit Point(Vector v) : x(v.x), y(v.y), z(v.z) { }
+    std::array<int, 3> _data;
+    int x() const { return _data[0]; }
+    int y() const { return _data[1]; }
+    int z() const { return _data[2]; }
 
     Point operator+(const Vector &v) const {
-        return {x + v.x, y + v.y, z + v.z};
+        return {x() + v.x(), y() + v.y(), z() + v.z()};
     }
 
     Vector operator-(const Point &v) const {
-        return {x - v.x, y - v.y, z - v.z};
+        return {x() - v.x(), y() - v.y(), z() - v.z()};
     }
 
     auto operator<=>(const Point &) const = default;
 
     friend std::ostream &operator<<(std::ostream &out, const Point &v) {
-        out << '(' << v.x << ',' << v.y << ',' << v.z << ')';
+        out << '(' << v.x() << ',' << v.y() << ',' << v.z() << ')';
         return out;
     }
 };
@@ -66,19 +75,19 @@ struct Point {
 struct Orientation {
     int _state = 0;
 
-    std::tuple<Vector, std::pair<int Vector::*, int Vector::*>, int> _x() const {
+    std::tuple<Vector, std::pair<int, int>, int> _x() const {
         switch (_state % 6) {
-            case 0: return {{ 1,  0,  0}, {&Vector::y, &Vector::z}, 0};
-            case 1: return {{-1,  0,  0}, {&Vector::y, &Vector::z}, 0};
-            case 2: return {{ 0,  1,  0}, {&Vector::x, &Vector::z}, 1};
-            case 3: return {{ 0, -1,  0}, {&Vector::x, &Vector::z}, 1};
-            case 4: return {{ 0,  0,  1}, {&Vector::x, &Vector::y}, 2};
-            case 5: return {{ 0,  0, -1}, {&Vector::x, &Vector::y}, 2};
+            case 0: return {{ 1,  0,  0}, {1, 2}, 0};
+            case 1: return {{-1,  0,  0}, {1, 2}, 0};
+            case 2: return {{ 0,  1,  0}, {0, 2}, 1};
+            case 3: return {{ 0, -1,  0}, {0, 2}, 1};
+            case 4: return {{ 0,  0,  1}, {0, 1}, 2};
+            case 5: return {{ 0,  0, -1}, {0, 1}, 2};
         }
         __builtin_unreachable();
     }
 
-    std::tuple<Vector, Vector, int::Vector::*, int, int> _xy() const {
+    std::tuple<Vector, Vector, int, int, int> _xy() const {
         auto [vx, rx, px] = _x();
         auto [a, b] = rx;
 
@@ -86,21 +95,20 @@ struct Orientation {
         auto heading = base % 2 ? -1 : 1;
         Vector out;
         if (base / 2) {
-            out.*b = heading;
-            return {vx, out, a, px, int(&(out.*b) - &out.x)};
+            out._data[b] = heading;
+            return {vx, out, a, px, b};
         }
         else {
-            out.*a = heading;
-            return std::tuple{vx, out, b, px, int(&(out.*a) - &out.x)};
+            out._data[a] = heading;
+            return std::tuple{vx, out, b, px, a};
         }
     }
 
     std::tuple<Vector, Vector, Vector> xyz() const {
-        auto [vx, vy, rz, px, py] = _xy();
+        auto [vx, vy, pz, px, py] = _xy();
 
         Vector z;
-        auto pz = &(z.*rz) - &z.x;
-        z.*rz = vx.sum() * vy.sum() * (py < px ? -1 : 1) * (pz < py ? -1 : 1) * (pz < px ? -1 : 1);
+        z._data[pz] = vx.sum() * vy.sum() * (py < px ? -1 : 1) * (pz < py ? -1 : 1) * (pz < px ? -1 : 1);
 
         return {vx, vy, z};
     }
@@ -113,9 +121,9 @@ struct Orientation {
 
     Point normalize(Point p) const {
         auto [vx, vy, vz] = xyz();
-        auto [x, y, z] = p;
+        auto [x, y, z] = p._data;
         Vector revec = vx * x + vy * y + vz * z;
-        return {revec.x, revec.y, revec.z};
+        return {revec.x(), revec.y(), revec.z()};
     }
 };
 
@@ -129,10 +137,7 @@ struct Scanner {
             std::getline(ss, sy, ',');
             std::getline(ss, sz);
 
-            Point p;
-            p.x = std::stoi(sx);
-            p.y = std::stoi(sy);
-            p.z = std::stoi(sz);
+            Point p{std::stoi(sx), std::stoi(sy), std::stoi(sz)};
             auto [_, ins] = _beacons.insert(p);
             assert(ins);
         }
@@ -157,10 +162,6 @@ struct Scanner {
 };
 
 int main() {
-    Orientation o;
-    o._state = 1 + 3 * 6;
-    std::cerr << o << '\n';
-
     std::vector<Scanner> scans;
 
     std::string line;
@@ -170,69 +171,53 @@ int main() {
     scans[0].done = true;
 
     int done = 0;
-    int dis = 4000;
-    int top_last;
+    int last = 0;
     do {
-        top_last = done;
-        int last = 0;
-        do {
-            for (int j = 0; j < scans.size(); ++j) {
-                for (int i = 1; i < scans.size(); ++i) {
-                    auto &origin = scans[j];
-                    auto &target = scans[i];
-                    if (i == j || !origin.done || target.done)
-                        continue;
+        for (int j = 0; j < ssize(scans); ++j) {
+            for (int i = 1; i < ssize(scans); ++i) {
+                auto &origin = scans[j];
+                auto &target = scans[i];
+                if (i == j || !origin.done || target.done)
+                    continue;
 
-                    int maxcnt = 0;
-                    for (int o = 0; o < 24; ++o) {
-                        target.axes._state = o;
+                int maxcnt = 0;
+                for (int o = 0; o < 24; ++o) {
+                    target.axes._state = o;
 
-                        auto obeacons = origin.beacons();
-                        for (auto &borig : obeacons) {
-                            target.origin = {0, 0, 0};
-                            for (auto &btarg : target.beacons()) {
-                                auto diff = borig - btarg;
-                                target.origin = diff;
-                                int cnt = 0;
-                                for (auto &bt : target.beacons()) {
-                                    cnt += obeacons.contains(bt); /*
-                                        && (bt - Point(origin.origin)).amax() <= 1000
-                                        && (bt - Point(target.origin)).amax() <= 1000; */
-                                }
-                                maxcnt = std::max(maxcnt, cnt);
-                                if (cnt >= 12) {
-                                    std::cerr << "intersected " << j + 1 << " & " << i + 1 << " (" << i + 1 << " at " << target.origin << ")\n";
-                                    goto done;
-                                }
+                    auto obeacons = origin.beacons();
+                    for (auto &borig : obeacons) {
+                        target.origin = {0, 0, 0};
+                        for (auto &btarg : target.beacons()) {
+                            auto diff = borig - btarg;
+                            target.origin = diff;
+                            int cnt = 0;
+                            for (auto &bt : target.beacons()) {
+                                cnt += obeacons.contains(bt)
+                                    && (bt - Point(origin.origin)).amax() <= 1000
+                                    && (bt - Point(target.origin)).amax() <= 1000;
+                            }
+                            maxcnt = std::max(maxcnt, cnt);
+                            if (cnt >= 12) {
+                                std::cerr << "intersected " << j + 1 << " & " << i + 1 << " (" << i + 1 << " at " << target.origin << ")\n";
+                                goto done;
                             }
                         }
                     }
-                    continue;
-
-                  done:
-                    target.done = true;
                 }
-            }
-            last = done;
-            done = 0;
-            for (auto &scanner : scans) {
-                if (scanner.done)
-                    ++done;
-            }
-            std::cerr << "pass: " << done << " done of " << scans.size() << "\n";
-        } while (done != scans.size() && done != last);
+                continue;
 
-        std::cerr << "fixed at " << done << " done of " << scans.size() << "\n";
-        for (auto &scan : scans) {
-            if (!scan.done) {
-                scan.origin = {dis, dis, dis};
-                dis += 4000;
-                scan.done;
-                break;
+              done:
+                target.done = true;
             }
         }
-    } while (done != scans.size());
-    std::cerr << "DONE\n";
+        last = done;
+        done = 0;
+        for (auto &scanner : scans) {
+            if (scanner.done)
+                ++done;
+        }
+        std::cerr << "pass: " << done << " done of " << scans.size() << "\n";
+    } while (done != ssize(scans) && done != last);
 
     std::set<Point> beacons;
     for (auto &scanner : scans) {
@@ -249,6 +234,5 @@ int main() {
             max = std::max((Point(sa.origin) - Point(sb.origin)).asum(), max);
         }
     }
-    std::cerr << (Point(scans[1].origin) - Point(scans[2].origin)).asum() << '\n';
     std::cout << max << '\n';
 }
