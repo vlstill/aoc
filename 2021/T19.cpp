@@ -73,7 +73,7 @@ struct Point {
 };
 
 struct Orientation {
-    int _state = 0;
+    Orientation() : _cache(_xyz()) { }
 
     std::tuple<Vector, std::pair<int, int>, int> _x() const {
         switch (_state % 6) {
@@ -104,7 +104,7 @@ struct Orientation {
         }
     }
 
-    std::tuple<Vector, Vector, Vector> xyz() const {
+    std::tuple<Vector, Vector, Vector> _xyz() const {
         auto [vx, vy, pz, px, py] = _xy();
 
         Vector z;
@@ -125,6 +125,17 @@ struct Orientation {
         Vector revec = vx * x + vy * y + vz * z;
         return {revec.x(), revec.y(), revec.z()};
     }
+
+    void set_state(int s) {
+        _state = s;
+        _cache = _xyz();
+    }
+
+    std::tuple<Vector, Vector, Vector> xyz() const { return _cache; }
+
+  private:
+    int _state = 0;
+    std::tuple<Vector, Vector, Vector> _cache;
 };
 
 struct Scanner {
@@ -182,7 +193,7 @@ int main() {
 
                 int maxcnt = 0;
                 for (int o = 0; o < 24; ++o) {
-                    target.axes._state = o;
+                    target.axes.set_state(o);
 
                     auto obeacons = origin.beacons();
                     for (auto &borig : obeacons) {
