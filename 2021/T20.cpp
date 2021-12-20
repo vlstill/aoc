@@ -35,7 +35,7 @@ struct Image {
 	}
     }
 
-    void step(std::vector<bool> &enhancement) {
+    void step(const std::vector<bool> &enhancement) {
 	assert(ssize(enhancement) == 512);
 	std::set<Point> next;
 
@@ -64,7 +64,7 @@ struct Image {
 	outside = outside ? enhancement.back() : enhancement.front();
     }
 
-    void dump() {
+    void dump() const {
 	for (long y = _min_y; y <= _max_y; ++y) {
 	    for (long x = _min_x; x <= _max_x ; ++x) {
 		std::cerr << (_data.contains({x, y}) ? '#' : '.');
@@ -90,18 +90,14 @@ int main() {
     }
     std::getline(std::cin, line);
     Image img(std::cin);
-    img.dump();
 
-    for (int i : {1, 2}) {
+    for (int _ : {1, 2}) {
 	img.step(enhancement);
-	img.dump();
     }
     std::cout << img._data.size() << '\n';
 
     for (int i = 2; i < 50; ++i) {
 	img.step(enhancement);
-	std::cerr << '.' << std::flush;
     }
-    std::cerr << '\n';
     std::cout << img._data.size() << '\n';
 }
