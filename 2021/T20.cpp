@@ -96,5 +96,12 @@ int main() {
 	img.step(enhancement);
 	img.dump();
     }
-    std::cerr << img._data.size() << '\n';
+    std::cout << img._data.size() << '\n';
+
+    for (int i = 2; i < 50; ++i) {
+	img.step(enhancement);
+	std::cerr << '.' << std::flush;
+    }
+    std::cerr << '\n';
+    std::cout << img._data.size() << '\n';
 }
