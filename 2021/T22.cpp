@@ -21,35 +21,6 @@
 
 using Range = std::array<std::pair<long, long>, 3>;
 
-const int X = 0, Y = 1, Z = 2;
-
-struct Vector {
-    Vector() : _data{0, 0, 0} { }
-    Vector(long x, long y, long z) : _data{x, y, z} { }
-
-    std::array<long, 3> _data;
-    long x() const { return _data[0]; }
-    long y() const { return _data[1]; }
-    long z() const { return _data[2]; }
-
-    long sum() const { return x() + y() + z(); }
-    long asum() const { return std::abs(x()) + std::abs(y()) + std::abs(z()); }
-    long amax() const { return std::max(std::abs(x()), std::max(std::abs(y()), std::abs(z()))); }
-
-    Vector operator+(const Vector &v) const {
-        return {x() + v.x(), y() + v.y(), z() + v.z()};
-    }
-
-    Vector operator*(long val) const {
-        return {x() * val, y() * val, z() * val};
-    }
-
-    friend std::ostream &operator<<(std::ostream &out, const Vector &v) {
-        out << '[' << v.x() << ',' << v.y() << ',' << v.z() << ']';
-        return out;
-    }
-};
-
 struct Point {
     Point() : _data{0, 0, 0} { }
     Point(long x, long y, long z) : _data{x, y, z} { }
@@ -58,14 +29,6 @@ struct Point {
     long x() const { return _data[0]; }
     long y() const { return _data[1]; }
     long z() const { return _data[2]; }
-
-    Point operator+(const Vector &v) const {
-        return {x() + v.x(), y() + v.y(), z() + v.z()};
-    }
-
-    Vector operator-(const Point &v) const {
-        return {x() - v.x(), y() - v.y(), z() - v.z()};
-    }
 
     auto operator<=>(const Point &) const = default;
 
@@ -109,6 +72,7 @@ struct OctTree {
     Leaf &leaf() { return std::get<Leaf>(data); }
     Split_<OctTree> &split() { return std::get<Split_<OctTree>>(data); }
 };
+
 using Split = Split_<OctTree>;
 
 void part_1(const auto &ranges) {
@@ -132,8 +96,6 @@ void part_1(const auto &ranges) {
     }
     std::cout << init_points.size() << '\n';
 }
-
-const std::array<bool, 3> T3 = {true, true, true};
 
 std::ostream &operator<<(std::ostream &os, std::optional<long> v) {
     if (v.has_value())
