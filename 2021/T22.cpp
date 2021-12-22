@@ -119,9 +119,6 @@ void part_1(const auto &ranges) {
 	auto [sx, ex] = rx;
 	auto [sy, ey] = ry;
 	auto [sz, ez] = rz;
-	std::cerr << sx << "," << ex
- 	   << ' ' << sy << "," << ey
- 	   << ' ' << sz << "," << ez << '\n';
 	for (long x = std::max(-50l, sx); x < std::min(51l, ex); ++x) {
 	    for (long y = std::max(-50l, sy); y < std::min(51l, ey); ++y) {
 		for (long z = std::max(-50l, sz); z < std::min(51l, ez); ++z) {
@@ -169,14 +166,12 @@ void insert(auto &ot, bool val, Range r, Bounds bounds = {}, int prefix = 0) {
     Point lower{sx, sy, sz};
     if (ot.is_leaf()) {
 	auto tree = &ot;
-	std::cerr << std::string(prefix, ' ') << "leaf ";
 	if ((!bounds[0].first.has_value() || *bounds[0].first < sx)
 	    || (!bounds[1].first.has_value() || *bounds[1].first < sy)
 	    || (!bounds[2].first.has_value() || *bounds[2].first < sz))
 	{
 	    tree->data = Split{lower, tree->leaf().enabled};
 	    tree = &tree->split().child(true, true, true);
-	    std::cerr << "lsplit ";
 	}
 	if ((!bounds[0].second.has_value() || ex < *bounds[0].second)
 	    || (!bounds[1].second.has_value() || ey < *bounds[1].second)
@@ -184,20 +179,11 @@ void insert(auto &ot, bool val, Range r, Bounds bounds = {}, int prefix = 0) {
 	{
 	    tree->data = Split{upper_ex, tree->leaf().enabled};
 	    tree = &tree->split().child(false, false, false);
-	    std::cerr << "usplit ";
 	}
-	std::cerr << "[" << bounds[0].first << ", " << bounds[0].second << ") × "
-		  << "[" << bounds[1].first << ", " << bounds[1].second << ") × "
-		  << "[" << bounds[2].first << ", " << bounds[2].second << ")";
-	std::cerr << (val ? "⊤\n" : "⊥\n");
 	tree->leaf().enabled = val;
 	return;
     }
 
-    std::cerr << std::string(prefix, ' ') << "split "
-	      << "[" << sx << ", " << ex << ") × "
-	      << "[" << sy << ", " << ey << ") × "
-	      << "[" << sz << ", " << ez << ") by " << ot.split().value << "\n";
     auto &sp = ot.split();
     for (bool dx : {true, false}) {
 	for (bool dy : {true, false}) {
@@ -216,13 +202,10 @@ void insert(auto &ot, bool val, Range r, Bounds bounds = {}, int prefix = 0) {
 			new_bounds[i].second = min(new_bounds[i].second, sp.value._data[i]);
 		    }
 		}
-		std::cerr << std::string(prefix, ' ') << "    into " << (dx ? "⊤" : "⊥") << (dy ? "⊤" : "⊥") << (dz ? "⊤ " : "⊥ ");
 		bool empty = false;
 		for (auto [s, e] : new_ragne) {
 		    empty = empty || e <= s;
-		    std::cerr << "[" << s << ", " << e << ") × ";
 		}
-		std::cerr << (empty ? "⊥\n" : "⊤\n");
 		if (!empty)
 		    insert(sp.child(dx, dy, dz), val, new_ragne, new_bounds, prefix + 4);
 	    }
@@ -236,14 +219,8 @@ long sum_enabled(auto &ot, Bounds bounds = {}, int prefix = 0) {
     auto [sy, ey] = ry;
     auto [sz, ez] = rz;
 
-    std::cerr << std::string(prefix, ' ') << "sum "
-	      << "[" << sx << ", " << ex << ") × "
-	      << "[" << sy << ", " << ey << ") × "
-	      << "[" << sz << ", " << ez << ")\n";
-
     if (ot.is_leaf()) {
 	if (ot.leaf().enabled) {
-	    std::cerr << std::string(prefix + 4, ' ') << "leaf ⊤\n";
 	    return (*ex - *sx) * (*ey - *sy) * (*ez - *sz);
 	}
 	else {
@@ -281,7 +258,7 @@ void part_2(const auto &ranges) {
     for (auto [v, r] : ranges) {
 	insert(ot, v, r);
     }
-    std::cerr << sum_enabled(ot);
+    std::cout << sum_enabled(ot) << '\n';
 }
 
 int main() {
@@ -302,9 +279,7 @@ int main() {
 	    long from = std::stol(part.substr(2, dot));
 	    long to = std::stol(part.substr(dot + 2));
 	    range[i] = {from, to + 1};
-	    std::cerr << from << ',' << to << ' ';
 	}
-	std::cerr << '\n';
 	ranges.emplace_back(on, range);
     }
     part_1(ranges);
