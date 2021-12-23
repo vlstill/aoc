@@ -92,9 +92,7 @@ struct Antipodium {
         }
     }
 
-    void dump(int depth, bool force = false) {
-        if (!force)
-            return;
+    void dump(int depth) {
         std::string pad(depth * 4, ' ');
         std::cerr << pad << std::string(13, '#') << '\n';
         std::cerr << pad << '#';
@@ -118,9 +116,6 @@ struct Antipodium {
 };
 
 std::optional<long> solve(Antipodium a, long current_energy, long current_max, auto &seen, int depth = 0) {
-//    std::cerr << 's' << depth << '\n';
-//    std::cerr << std::string(depth * 4, ' ') << current_energy << ' ' << current_max << '\n';
-    a.dump(depth);
     if (current_energy > current_max)
 	return std::nullopt;
 
@@ -130,7 +125,6 @@ std::optional<long> solve(Antipodium a, long current_energy, long current_max, a
     seen[a] = current_energy;
 
     if (a.sorted()) {
-        std::cerr << "sorted " << current_energy << '\n';
 	return current_energy;
     }
 
@@ -138,7 +132,6 @@ std::optional<long> solve(Antipodium a, long current_energy, long current_max, a
     int local_solved = 0;
     for (int i = 0; i < ssize(a.hallway); ++i) {
 	if (a.hallway[i] != 0) {
-//            std::cerr << std::string(4 * depth, ' ') << a.hallway[i] << " in\n";
             if (auto r = a.go_home(a.hallway[i], i)) {
 		auto [next, price] = *r;
                 if (auto s = solve(next, current_energy + price, local_best, seen, depth + 1)) {
@@ -159,7 +152,6 @@ std::optional<long> solve(Antipodium a, long current_energy, long current_max, a
                 return false;
             };
             if (antipod != 0 && should_move_out()) {
-//                std::cerr << std::string(4 * depth, ' ') << antipod << b << " out\n";
                 a.go_out(antipod, b, i, [&](auto next, auto price) {
                     if (auto s = solve(next, current_energy + price, local_best, seen, depth + 1)) {
                         ++local_solved;
@@ -213,6 +205,6 @@ int main() {
     input.burrows[3][1] = 'A';
     input.burrows[3][2] = 'C';
 
-    input.dump(0, true);
+    input.dump(0);
     std::cout << solve(input, 0, std::numeric_limits<long>::max(), seen).value() << '\n';
 }
