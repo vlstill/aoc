@@ -26,7 +26,7 @@ int move_energy(char a) {
 
 struct Antipodium {
     std::array<char, 11> hallway{};
-    std::array<std::array<char, 2>, 4> burrows{};
+    std::array<std::array<char, 4>, 4> burrows{};
 
     auto operator<=>(const Antipodium &) const = default;
 
@@ -64,7 +64,7 @@ struct Antipodium {
         }
         auto copy(*this);
         copy.hallway[from_where] = 0;
-        for (int i : {1, 0}) {
+        for (int i : {3, 2, 1, 0}) {
             if (copy.burrows[where][i] == 0) {
                 copy.burrows[where][i] = who;
                 return std::pair(copy, (i + 1 + std::abs(from_where - door)) * move_energy(who));
@@ -74,8 +74,9 @@ struct Antipodium {
     }
 
     void go_out(char who, int bur, int idx, auto yield) {
-        if (idx == 1 && burrows[bur][0] != 0)
-            return;
+        for (int i = idx - 1; i >= 0; --i)
+            if (burrows[bur][i] != 0)
+                return;
         auto pos = 2 + 2 * bur;
         for (auto dir : {1, -1}) {
             for (int i = pos + dir; i >= 0 && i < ssize(hallway); i += dir) {
@@ -91,7 +92,9 @@ struct Antipodium {
         }
     }
 
-    void dump(int depth) {
+    void dump(int depth, bool force = false) {
+        if (!force)
+            return;
         std::string pad(depth * 4, ' ');
         std::cerr << pad << std::string(13, '#') << '\n';
         std::cerr << pad << '#';
@@ -104,15 +107,19 @@ struct Antipodium {
                 std::cerr << (bur[i] ?: '.') << '#';
         };
         b(0);
-        std::cerr << "##\n" << pad << "  #";
-        b(1);
-        std::cerr << '\n' << pad << "  " << std::string(9, '#') << '\n';
+        std::cerr << "##\n";
+        for (int i : {1, 2, 3}) {
+            std::cerr << pad << "  #";
+            b(i);
+            std::cerr << "\n";
+        }
+        std::cerr << pad << "  " << std::string(9, '#') << '\n';
     }
 };
 
 std::optional<long> solve(Antipodium a, long current_energy, long current_max, auto &seen, int depth = 0) {
 //    std::cerr << 's' << depth << '\n';
-    std::cerr << std::string(depth * 4, ' ') << current_energy << ' ' << current_max << '\n';
+//    std::cerr << std::string(depth * 4, ' ') << current_energy << ' ' << current_max << '\n';
     a.dump(depth);
     if (current_energy > current_max)
 	return std::nullopt;
@@ -131,7 +138,7 @@ std::optional<long> solve(Antipodium a, long current_energy, long current_max, a
     int local_solved = 0;
     for (int i = 0; i < ssize(a.hallway); ++i) {
 	if (a.hallway[i] != 0) {
-            std::cerr << std::string(4 * depth, ' ') << a.hallway[i] << " in\n";
+//            std::cerr << std::string(4 * depth, ' ') << a.hallway[i] << " in\n";
             if (auto r = a.go_home(a.hallway[i], i)) {
 		auto [next, price] = *r;
                 if (auto s = solve(next, current_energy + price, local_best, seen, depth + 1)) {
@@ -142,10 +149,17 @@ std::optional<long> solve(Antipodium a, long current_energy, long current_max, a
 	}
     }
     for (int b = 0; b < 4; ++b) {
-        for (int i : {0, 1}) {
+        for (int i : {0, 1, 2, 3}) {
             auto antipod = a.burrows[b][i];
-            if (antipod != 0 && (b != a.dst_burrow_idx(antipod) || (i == 0 && a.dst_burrow_idx(a.burrows[b][1] != b)))) {
-                std::cerr << std::string(4 * depth, ' ') << antipod << b << " out\n";
+            auto should_move_out = [&]{
+                for (int j = i; j < 4; ++j) {
+                    if (b != a.dst_burrow_idx(a.burrows[b][j]))
+                        return true;
+                }
+                return false;
+            };
+            if (antipod != 0 && should_move_out()) {
+//                std::cerr << std::string(4 * depth, ' ') << antipod << b << " out\n";
                 a.go_out(antipod, b, i, [&](auto next, auto price) {
                     if (auto s = solve(next, current_energy + price, local_best, seen, depth + 1)) {
                         ++local_solved;
@@ -175,9 +189,30 @@ int main() {
 	    ++j;
 	}
 
+        for (int b : {0, 1, 2, 3}) {
+            for (int i : {2, 3}) {
+                input.burrows[b][i] = 'A' + b;
+            }
+        }
 	input.dump(0);
     }
 
     std::map<Antipodium, long> seen;
-    std::cout << solve(input, 0, std::numeric_limits<long>::max(), seen).value();
+    std::cout << solve(input, 0, std::numeric_limits<long>::max(), seen).value() << '\n';
+
+    seen.clear();
+    for (int i : {0, 1, 2, 3}) {
+        input.burrows[i][3] = input.burrows[i][1];
+    }
+    input.burrows[0][1] = 'D';
+    input.burrows[0][2] = 'D';
+    input.burrows[1][1] = 'C';
+    input.burrows[1][2] = 'B';
+    input.burrows[2][1] = 'B';
+    input.burrows[2][2] = 'A';
+    input.burrows[3][1] = 'A';
+    input.burrows[3][2] = 'C';
+
+    input.dump(0, true);
+    std::cout << solve(input, 0, std::numeric_limits<long>::max(), seen).value() << '\n';
 }
