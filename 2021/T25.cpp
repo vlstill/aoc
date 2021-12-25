@@ -54,10 +54,6 @@ int main() {
         bool m2;
         std::tie(m2, map) = step(map, 'v', 0, 1);
         moved |= m2;
-
-        for (auto line : map)
-            std::cerr << line << '\n';
-        std::cerr << '\n';
     }
     std::cout << i - 1 << '\n';
 }
