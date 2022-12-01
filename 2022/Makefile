@@ -33,7 +33,7 @@ $(TASKS_KT:%.kt=%) : % : %.kt
 	@chmod +x $@
 	@[ -f $@.out.check ] && touch $@.out.check
 
-$(TASKS_GO:%.go=%) : % : %.go
+$(TASKS_GO:%.go=%) : % : %.go $(wildcard utils/*.go)
 	@flock $< go build $<
 
 $(TASKS_PY:%.py=%) : % : %.py
