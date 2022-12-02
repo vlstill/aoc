@@ -5,8 +5,6 @@ import (
     "fmt"
     "os"
     "strings"
-//    "strconv"
-//    "aoc/utils"
 )
 
 func eval(choice, other int) int {
@@ -24,13 +22,10 @@ func main() {
     score2 := 0
     for scanner.Scan() {
         line := scanner.Text()
-        // val, _ := strconv.Atoi(line)
-
         split := strings.Fields(line)
-        choice := int(rune(split[1][0])) - int('X') + 1
 
-        other := int(rune(split[0][0])) - int('A') + 1
-        // fmt.Println(other, choice)
+        choice := int(split[1][0]) - int('X') + 1
+        other := int(split[0][0]) - int('A') + 1
         score += eval(choice, other)
 
         switch split[1] {
@@ -47,7 +42,6 @@ func main() {
                     choice = 1
                 }
         }
-        fmt.Println(other, choice)
         score2 += eval(choice, other)
     }
     fmt.Println(score)
