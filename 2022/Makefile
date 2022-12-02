@@ -62,4 +62,3 @@ clean :
 	rm -f *.o *.hi
 
 .PHONY: %.run %.check %.bench %.test clean
-.SUFFIXES:
