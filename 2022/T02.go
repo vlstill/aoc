@@ -8,7 +8,7 @@ import (
 )
 
 func eval(choice, other int) (score int) {
-    score = choice
+    score = choice + 1
     if choice == other {
         score += 3
     } else if (choice - other == 1 || other - choice == 2) {
@@ -25,23 +25,17 @@ func main() {
         line := scanner.Text()
         split := strings.Fields(line)
 
-        choice := int(split[1][0]) - int('X') + 1
-        other := int(split[0][0]) - int('A') + 1
+        choice := int(split[1][0]) - int('X')
+        other := int(split[0][0]) - int('A')
         score += eval(choice, other)
 
         switch split[1] {
             case "X":
-                choice = other - 1
-                if choice == 0 {
-                    choice = 3
-                }                    
+                choice = (other + 2) % 3
             case "Y":
                 choice = other
             case "Z":
-                choice = other + 1
-                if choice == 4 {
-                    choice = 1
-                }
+                choice = (other + 1) % 3
         }
         score2 += eval(choice, other)
     }
