@@ -7,13 +7,14 @@ import (
     "strings"
 )
 
-func eval(choice, other int) int {
+func eval(choice, other int) (score int) {
+    score = choice
     if choice == other {
-        return choice + 3
+        score += 3
     } else if (choice - other == 1 || other - choice == 2) {
-        return choice + 6
+        score += 6
     }
-    return choice
+    return
 }
 
 func main() {
