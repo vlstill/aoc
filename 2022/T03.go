@@ -4,27 +4,37 @@ import (
     "bufio"
     "fmt"
     "os"
-//    "strings"
 )
 
 func decode(str string) (out []int) {
     out = make([]int, len(str))
-    for i := 0; i < len(str); i++ {
-        if ('a' <= str[i] && str[i] <= 'z') {
-            out[i] = int(str[i]) - 'a' + 1
+    for i, v := range str {
+        if ('a' <= v && v <= 'z') {
+            out[i] = int(v) - 'a' + 1
         } else {
-            out[i] = int(str[i]) - 'A' + 27
+            out[i] = int(v) - 'A' + 27
         }
     }
     return
 }
 
+func misplaced(first, second []int) int {
+    for _, a := range first {
+        for _, b := range second {
+            if a == b {
+                return a
+            }
+        }
+    }
+    return 0
+}
+
 func find_badge(elves [][]int) int {
-    for i := 0; i < len(elves[0]); i++ {
-        for j := 0; j < len(elves[1]); j++ {
-            for k := 0; k < len(elves[2]); k++ {
-                if elves[0][i] == elves[1][j] && elves[1][j] == elves[2][k] {
-                    return elves[0][i]
+    for _, a := range elves[0] {
+        for _, b := range elves[1] {
+            for _, c := range elves[2] {
+                if a == b && b == c {
+                    return a
                 }
             }
         }
@@ -34,34 +44,25 @@ func find_badge(elves [][]int) int {
 
 func main() {
     scanner := bufio.NewScanner(os.Stdin)
-    score := 0
-    score2 := 0
+    pt1 := 0
+    pt2 := 0
     group := make([][]int, 0, 3)
     for scanner.Scan() {
         line := scanner.Text()
         all := decode(line)
         first := decode(line[0:len(line)/2])
         second := decode(line[len(line)/2:])
-//        fmt.Println(first, second)
 
-        found := false
-        for i := 0; !found && i < len(first); i++ {
-            for j := 0; !found && j < len(second); j++ {
-                if first[i] == second[j] {
-                    score += first[i]
-                    found = true
-                }
-            }
-        }
+        pt1 += misplaced(first, second)
 
         group = append(group, all)
         if len(group) == 3 {
-            score2 += find_badge(group)
+            pt2 += find_badge(group)
             group = make([][]int, 0, 3)
         }
     }
-    fmt.Println(score)
-    fmt.Println(score2)
+    fmt.Println(pt1)
+    fmt.Println(pt2)
 }
 
 // vim: expandtab tw=99 colorcolumn=100
