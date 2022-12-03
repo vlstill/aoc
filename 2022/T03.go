@@ -18,26 +18,58 @@ func decode(str string) (out []int) {
     return
 }
 
-func misplaced(first, second []int) int {
-    for _, a := range first {
-        for _, b := range second {
-            if a == b {
-                return a
-            }
-        }
+type unit struct{}
+type Set map[int]unit
+
+func (self *Set) Insert(v int) bool {
+    if _, ok := (*self)[v]; !ok {  // fuj
+        (*self)[v] = unit{}  // fuj
+        return true
     }
-    return 0
+    return false
 }
 
-func find_badge(elves [][]int) int {
-    for _, a := range elves[0] {
-        for _, b := range elves[1] {
-            for _, c := range elves[2] {
-                if a == b && b == c {
-                    return a
-                }
-            }
+func (self *Set) Has(v int) bool {
+    _, ok := (*self)[v]  // fuj
+    return ok
+}
+
+func (self *Set) Delete(v int) {
+    delete(*self, v)  // fuj
+}
+
+func Intersect(a, b Set) (out Set) {
+    out = make(Set)
+    if len(a) > len(b) {
+        a, b = b, a
+    }
+    for k, _ := range a {
+        if _, ok := b[k]; ok {
+            out.Insert(k)
         }
+    }
+    return
+}
+
+func MkSet(vals []int) (out Set) {
+    out = make(Set)
+    for _, v := range vals {
+        out.Insert(v)
+    }
+    return
+}
+
+func in_all(elves [][]int) int {
+    var comm Set = nil
+    for _, bag := range elves {
+        if comm == nil {
+            comm = MkSet(bag)
+        } else {
+            comm = Intersect(comm, MkSet(bag))
+        }
+    }
+    for k, _ := range comm {  // fuj
+        return k
     }
     return 0
 }
@@ -53,11 +85,11 @@ func main() {
         first := decode(line[0:len(line)/2])
         second := decode(line[len(line)/2:])
 
-        pt1 += misplaced(first, second)
+        pt1 += in_all([][]int{first, second})
 
         group = append(group, all)
         if len(group) == 3 {
-            pt2 += find_badge(group)
+            pt2 += in_all(group)
             group = make([][]int, 0, 3)
         }
     }
