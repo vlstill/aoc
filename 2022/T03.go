@@ -4,6 +4,7 @@ import (
     "bufio"
     "fmt"
     "os"
+    "aoc/utils"
 )
 
 func decode(str string) (out []int) {
@@ -18,56 +19,13 @@ func decode(str string) (out []int) {
     return
 }
 
-type unit struct{}
-type Set[T comparable] map[T]unit
-
-// self looks like value, right? WRONG, you can modify the set, you just can't re-bind it o\
-func (self Set[T]) Insert(v T) bool {
-    if _, ok := self[v]; !ok {
-        self[v] = unit{}  // fuj
-        return true
-    }
-    return false
-}
-
-func (self Set[T]) Has(v T) bool {
-    _, ok := self[v]
-    return ok
-}
-
-func (self Set[T]) Delete(v T) {
-    delete(self, v)
-}
-
-func Intersect[T comparable](a, b Set[T]) (out Set[T]) {
-    // better not modify a and b or someone will get nasty surprise…
-    out = make(Set[T])
-    if len(a) > len(b) {
-        a, b = b, a
-    }
-    for k, _ := range a {
-        if _, ok := b[k]; ok {
-            out.Insert(k)
-        }
-    }
-    return
-}
-
-func MkSet[T comparable](vals []T) (out Set[T]) {
-    out = make(Set[T])
-    for _, v := range vals {
-        out.Insert(v)
-    }
-    return
-}
-
 func in_all(elves [][]int) int {
-    var comm Set[int] = nil
+    var comm utils.Set[int] = nil
     for _, bag := range elves {
         if comm == nil {
-            comm = MkSet(bag)
+            comm = utils.MkSet(bag)
         } else {
-            comm = Intersect(comm, MkSet(bag))
+            comm = utils.Intersect(comm, utils.MkSet(bag))
         }
     }
     for k, _ := range comm {  // fuj
