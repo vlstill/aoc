@@ -44,3 +44,46 @@ func SortDesc[T constraints.Ordered](arr []T) []T {
     sort.Sort(MaxOrdered[T](out));
     return out;
 }
+
+type Unit struct{}
+type Set[T comparable] map[T]Unit
+
+// self looks like value, right? WRONG, you can modify the set, you just can't re-bind it o\
+func (self Set[T]) Insert(v T) bool {
+    if _, ok := self[v]; !ok {
+        self[v] = Unit{}  // fuj
+        return true
+    }
+    return false
+}
+
+func (self Set[T]) Has(v T) bool {
+    _, ok := self[v]
+    return ok
+}
+
+func (self Set[T]) Delete(v T) {
+    delete(self, v)
+}
+
+func Intersect[T comparable](a, b Set[T]) (out Set[T]) {
+    // better not modify a and b or someone will get nasty surprise…
+    out = make(Set[T])
+    if len(a) > len(b) {
+        a, b = b, a
+    }
+    for k, _ := range a {
+        if _, ok := b[k]; ok {
+            out.Insert(k)
+        }
+    }
+    return
+}
+
+func MkSet[T comparable](vals []T) (out Set[T]) {
+    out = make(Set[T])
+    for _, v := range vals {
+        out.Insert(v)
+    }
+    return
+}
