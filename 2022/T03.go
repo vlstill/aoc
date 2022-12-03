@@ -21,24 +21,26 @@ func decode(str string) (out []int) {
 type unit struct{}
 type Set map[int]unit
 
-func (self *Set) Insert(v int) bool {
-    if _, ok := (*self)[v]; !ok {  // fuj
-        (*self)[v] = unit{}  // fuj
+// self looks like value, right? WRONG, you can modify the set, you just can't re-bind it o\
+func (self Set) Insert(v int) bool {
+    if _, ok := self[v]; !ok {
+        self[v] = unit{}  // fuj
         return true
     }
     return false
 }
 
-func (self *Set) Has(v int) bool {
-    _, ok := (*self)[v]  // fuj
+func (self Set) Has(v int) bool {
+    _, ok := self[v]
     return ok
 }
 
-func (self *Set) Delete(v int) {
-    delete(*self, v)  // fuj
+func (self Set) Delete(v int) {
+    delete(self, v)
 }
 
 func Intersect(a, b Set) (out Set) {
+    // better not modify a and b or someone will get nasty surprise…
     out = make(Set)
     if len(a) > len(b) {
         a, b = b, a
