@@ -19,10 +19,10 @@ func decode(str string) (out []int) {
 }
 
 type unit struct{}
-type Set map[int]unit
+type Set[T comparable] map[T]unit
 
 // self looks like value, right? WRONG, you can modify the set, you just can't re-bind it o\
-func (self Set) Insert(v int) bool {
+func (self Set[T]) Insert(v T) bool {
     if _, ok := self[v]; !ok {
         self[v] = unit{}  // fuj
         return true
@@ -30,18 +30,18 @@ func (self Set) Insert(v int) bool {
     return false
 }
 
-func (self Set) Has(v int) bool {
+func (self Set[T]) Has(v T) bool {
     _, ok := self[v]
     return ok
 }
 
-func (self Set) Delete(v int) {
+func (self Set[T]) Delete(v T) {
     delete(self, v)
 }
 
-func Intersect(a, b Set) (out Set) {
+func Intersect[T comparable](a, b Set[T]) (out Set[T]) {
     // better not modify a and b or someone will get nasty surprise…
-    out = make(Set)
+    out = make(Set[T])
     if len(a) > len(b) {
         a, b = b, a
     }
@@ -53,8 +53,8 @@ func Intersect(a, b Set) (out Set) {
     return
 }
 
-func MkSet(vals []int) (out Set) {
-    out = make(Set)
+func MkSet[T comparable](vals []T) (out Set[T]) {
+    out = make(Set[T])
     for _, v := range vals {
         out.Insert(v)
     }
@@ -62,7 +62,7 @@ func MkSet(vals []int) (out Set) {
 }
 
 func in_all(elves [][]int) int {
-    var comm Set = nil
+    var comm Set[int] = nil
     for _, bag := range elves {
         if comm == nil {
             comm = MkSet(bag)
