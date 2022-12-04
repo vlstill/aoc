@@ -8,7 +8,7 @@ import (
     "strconv"
 )
 
-func rng(in string) (int, int) {
+func parse_range(in string) (int, int) {
     split := strings.Split(in, "-")
     a, _ := strconv.Atoi(split[0])
     b, _ := strconv.Atoi(split[1])
@@ -22,13 +22,14 @@ func main() {
     for scanner.Scan() {
         line := scanner.Text()
         split := strings.Split(line, ",")
-        a0, b0 := rng(split[0])
-        a1, b1 := rng(split[1])
+        l0, h0 := parse_range(split[0])
+        l1, h1 := parse_range(split[1])
 
-        if ((a0 <= a1 && b0 >= b1) || (a1 <= a0 && b1 >= b0)) {
+        if ((l0 <= l1 && h0 >= h1) || (l1 <= l0 && h1 >= h0)) {
             pt1 += 1
             pt2 += 1
-        } else if (a1 <= a0 && a0 <= b1) || (a1 <= b0 && b0 <= b1) || (a0 <= a1 && a1 <= b0) || (a0 <= b1 && b1 <= b0) {
+        } else if (l1 <= l0 && l0 <= h1) || (l1 <= h0 && h0 <= h1) ||
+                  (l0 <= l1 && l1 <= h0) || (l0 <= h1 && h1 <= h0) {
             pt2 += 1
         }
     }
