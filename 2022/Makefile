@@ -7,6 +7,9 @@ TASKS = $(TASKS_HS:%.hs=%) $(TASKS_PY:%.py=%) $(TASKS_CPP:%.cpp=%) $(TASKS_KT:%.
 OUTS = $(wildcard T*.out.check)
 PWD != pwd
 
+ME_MAIL != git config user.email
+COOKIE != cat .suš
+
 SHELL = bash
 
 all : run check
@@ -57,6 +60,9 @@ $(OUTS:%.out.check=%.check) : %.check : % %.in %.out.check
 $(TASKS:%=%.bench) : %.bench : % %.in
 	@echo "Bench $(<:T%.hs=%):"
 	cat $<.in | time -f "%es" ./$(<:%.hs=%)
+
+$(TASKS:%=%.in) : % : .suš
+	curl https://adventofcode.com/2022/day/$(patsubst 0%,%,$(patsubst T%.in,%,$@))/input -b $(COOKIE) -A 'github.com/vlstill/aoc task-downloader by $(ME_MAIL)' > $@
 
 clean :
 	rm -f *.o *.hi
