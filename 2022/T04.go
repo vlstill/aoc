@@ -27,7 +27,10 @@ func main() {
 
         if ((a0 <= a1 && b0 >= b1) || (a1 <= a0 && b1 >= b0)) {
             pt1 += 1
-        } 
+            pt2 += 1
+        } else if (a1 <= a0 && a0 <= b1) || (a1 <= b0 && b0 <= b1) || (a0 <= a1 && a1 <= b0) || (a0 <= b1 && b1 <= b0) {
+            pt2 += 1
+        }
     }
     fmt.Println(pt1)
     fmt.Println(pt2)
