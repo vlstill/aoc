@@ -8,10 +8,9 @@ import (
     "strconv"
 )
 
-func move(stack [][]byte, from, to int) {
-    idx := len(stack[from]) - 1
-    val := stack[from][idx]
-    stack[to] = append(stack[to], val)
+func move(stack [][]byte, from, to int, cnt int) {
+    idx := len(stack[from]) - cnt
+    stack[to] = append(stack[to], stack[from][idx:]...)
     stack[from] = stack[from][0:idx]
 }
 
@@ -58,10 +57,8 @@ func main() {
             from--
             to--
             fmt.Println(cnt, from, to)
-            for i := 0; i < cnt; i++ {
-                move(stacks, from, to)
-                fmt.Println(stacks)
-            }
+            move(stacks, from, to, cnt)
+            fmt.Println(stacks)
         }        
     }
     for _, st := range stacks {
