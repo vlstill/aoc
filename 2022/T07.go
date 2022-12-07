@@ -6,12 +6,13 @@ import (
     "os"
     "strings"
     "strconv"
+    "aoc/utils"
 )
 
 func main() {
     scanner := bufio.NewScanner(os.Stdin)
     pt1 := 0
-    pt2 := 0
+    pt2 := 70000000
     path := []string{}
     dirsz := make(map[string]int)
     for scanner.Scan() {
@@ -31,15 +32,23 @@ func main() {
             continue
         } else if split[0] != "dir" {
             sz, _ := strconv.Atoi(split[0])
-            fmt.Println(sz)
+            fmt.Println(sz, split[1])
             for i := 0; i <= len(path); i++ {
                 dirsz[strings.Join(path[0:i], "/")] += sz
             }
         }        
     }
+    fmt.Println(dirsz)
+    total := dirsz[""]
+    need := 30000000 - (70000000 - total)
     for _, v := range dirsz {
         if (v < 100000) {
             pt1 += v
+        }
+        if v > need {
+//            fmt.Println(v)
+            pt2 = utils.Min(pt2, v)
+//            fmt.Println(v)
         }
     }
     fmt.Println(pt1)
