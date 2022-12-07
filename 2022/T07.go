@@ -7,6 +7,7 @@ import (
     "strings"
     "strconv"
     "aoc/utils"
+    "path/filepath"
 )
 
 func main() {
@@ -29,7 +30,7 @@ func main() {
         } else if split[0] != "dir" {
             sz, _ := strconv.Atoi(split[0])
             for i := 0; i <= len(path); i++ {
-                dirsz[strings.Join(path[0:i], "/")] += sz
+                dirsz[filepath.Join(path[0:i]...)] += sz
             }
         }        
     }
