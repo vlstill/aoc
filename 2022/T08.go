@@ -4,18 +4,8 @@ import (
     "bufio"
     "fmt"
     "os"
-    "strings"
-    "strconv"
     "aoc/utils"
 )
-
-func use(_ interface{}) {
-    if 4 == 2 {
-        _ = utils.Min(4, 2)
-        _ = strings.Split("", "")
-        _, _ = strconv.Atoi("42")
-    }
-}
 
 func parse(line string) (out []int) {
     out = make([]int, len(line))
@@ -72,9 +62,6 @@ func main() {
     for scanner.Scan() {
         line := scanner.Text()
         matrix = append(matrix, parse(line))
-
-        split := strings.Split(line, " ")
-        use(split)
     }
 
     for i := 0; i < len(matrix); i++ {
