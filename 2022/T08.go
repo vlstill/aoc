@@ -44,6 +44,26 @@ func visible(matrix [][]int, i, j int) bool {
     return vis(matrix, i, j, -1, 0) || vis(matrix, i, j, 1, 0) || vis(matrix, i, j, 0, -1) || vis(matrix, i, j, 0, 1)
 }
 
+func dis(matrix [][]int, x, y, dx, dy int) int {
+    ref := matrix[x][y]
+
+    x += dx
+    y += dy
+    cnt := 0
+    for ;x >= 0 && y >= 0 && x < len(matrix) && y < len(matrix[0]); cnt ++ {
+        if matrix[x][y] >= ref {
+            return cnt + 1
+        }
+        x += dx
+        y += dy
+    }
+    return cnt
+}
+
+func vidis(matrix [][]int, i, j int) int {
+    return dis(matrix, i, j, -1, 0) * dis(matrix, i, j, 1, 0) * dis(matrix, i, j, 0, -1) * dis(matrix, i, j, 0, 1)
+}
+
 func main() {
     scanner := bufio.NewScanner(os.Stdin)
     pt1 := 0
@@ -62,6 +82,7 @@ func main() {
             if visible(matrix, i, j) {
                 pt1++
             }
+            pt2 = utils.Max(pt2, vidis(matrix, i, j))
         }
     }
 
