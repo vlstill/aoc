@@ -9,14 +9,6 @@ import (
     "aoc/utils"
 )
 
-func use(_ interface{}) {
-    if 4 == 2 {
-        _ = utils.Min(4, 2)
-        _ = strings.Split("", "")
-        _, _ = strconv.Atoi("42")
-    }
-}
-
 type Point struct {
     x int
     y int
@@ -52,18 +44,14 @@ func move(rope []Point, dx, dy int) {
 
 func main() {
     scanner := bufio.NewScanner(os.Stdin)
-    pt1 := 0
-    pt2 := 0
     rope1 := []Point{Point{0, 0}, Point{0, 0}}
     rope2 := make([]Point, 10)
-    seen := make(map[Point]int)
+    seen1 := make(map[Point]int)
     seen2 := make(map[Point]int)
     for scanner.Scan() {
         line := scanner.Text()
         split := strings.Split(line, " ")
-        use(split)
         cnt, _ := strconv.Atoi(split[1])
-        fmt.Println(split[0], cnt)
         for i := 0; i < cnt; i++ {
             switch split[0] {
                 case "R":
@@ -79,18 +67,13 @@ func main() {
                 case "D":
                     move(rope1, 0, -1)
                     move(rope2, 0, -1)
-                default:
-                    fmt.Println("invalid")
             }
-            seen[rope1[1]] = 1
+            seen1[rope1[1]] = 1
             seen2[rope2[9]] = 1
-            fmt.Println(rope2)
         }
     }
-    pt1 = len(seen)
-    pt2 = len(seen2)
-    fmt.Println(pt1)
-    fmt.Println(pt2)
+    fmt.Println(len(seen1))
+    fmt.Println(len(seen2))
 }
 
 // vim: expandtab tw=99 colorcolumn=100
