@@ -19,6 +19,22 @@ func Max[T constraints.Ordered](a, b T) T {
     return b
 }
 
+func Abs(a int) int {
+    if a < 0 {
+        return -a;
+    }
+    return a;    
+}
+
+func Signum(x int) int {
+    if x > 0 {
+        return 1
+    } else if x < 0 {
+        return -1
+    }
+    return 0
+}
+
 type MinOrdered[T constraints.Ordered] []T
 
 func (x MinOrdered[T]) Len() int { return len(x) }
