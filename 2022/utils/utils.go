@@ -5,6 +5,14 @@ import (
     "sort"
 )
 
+type OrdNum interface {
+    constraints.Integer | constraints.Float
+}
+
+type OrdSignedNum interface {
+    constraints.Signed | constraints.Float
+}
+
 func Min[T constraints.Ordered](a, b T) T {
     if a < b {
 	return a
@@ -19,14 +27,14 @@ func Max[T constraints.Ordered](a, b T) T {
     return b
 }
 
-func Abs[T constraints.Integer](a T) T {
+func Abs[T OrdNum](a T) T {
     if a < T(0) {
         return -a;
     }
     return a;    
 }
 
-func Signum[T constraints.Signed](x T) T {
+func Signum[T OrdSignedNum](x T) T {
     if x > T(0) {
         return T(1)
     } else if x < T(0) {
