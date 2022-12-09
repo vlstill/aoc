@@ -19,20 +19,20 @@ func Max[T constraints.Ordered](a, b T) T {
     return b
 }
 
-func Abs(a int) int {
-    if a < 0 {
+func Abs[T constraints.Integer](a T) T {
+    if a < T(0) {
         return -a;
     }
     return a;    
 }
 
-func Signum(x int) int {
-    if x > 0 {
-        return 1
-    } else if x < 0 {
-        return -1
+func Signum[T constraints.Signed](x T) T {
+    if x > T(0) {
+        return T(1)
+    } else if x < T(0) {
+        return T(-1)
     }
-    return 0
+    return T(0)
 }
 
 type MinOrdered[T constraints.Ordered] []T
