@@ -17,13 +17,47 @@ func use(_ interface{}) {
     }
 }
 
+type Point struct {
+    x int
+    y int
+}
+
+func move(rope []Point, dx, dy int) {
+    rope[0].x += dx
+    rope[0].y += dy
+    for i := 1; i < len(rope); i++ {
+        dx = utils.Signum(rope[i - 1].x - rope[i].x)
+        dy = utils.Signum(rope[i - 1].y - rope[i].y)
+        if utils.Abs(rope[i - 1].x - rope[i].x) > 1 {
+            rope[i].x += dx
+            if rope[i - 1].y != rope[i].y {
+                if rope[i - 1].y > rope[i].y {
+                    rope[i].y++
+                } else {
+                    rope[i].y--
+                }
+            }
+        } else if utils.Abs(rope[i - 1].y - rope[i].y) > 1 {
+            rope[i].y += dy
+            if rope[i - 1].x != rope[i].x {
+                if rope[i - 1].x > rope[i].x {
+                    rope[i].x++
+                } else {
+                    rope[i].x--
+                }
+            }
+        }
+    }
+}
+
 func main() {
     scanner := bufio.NewScanner(os.Stdin)
     pt1 := 0
     pt2 := 0
-    hx, hy := 0, 0
-    tx, ty := 0, 0
-    seen := make(map[int]int)
+    rope1 := []Point{Point{0, 0}, Point{0, 0}}
+    rope2 := make([]Point, 10)
+    seen := make(map[Point]int)
+    seen2 := make(map[Point]int)
     for scanner.Scan() {
         line := scanner.Text()
         split := strings.Split(line, " ")
@@ -33,62 +67,28 @@ func main() {
         for i := 0; i < cnt; i++ {
             switch split[0] {
                 case "R":
-                    hx++;
-                    if hx > tx + 1 {
-                        tx++
-                        if hy != ty {
-                            if hy > ty {
-                                ty++
-                            } else {
-                                ty--
-                            }
-                        }
-                    }
+                    move(rope1, 1, 0)
+                    move(rope2, 1, 0)
                 case "L":
-                    hx--;
-                    if hx < tx - 1 {
-                        tx--
-                        if hy != ty {
-                            if hy > ty {
-                                ty++
-                            } else {
-                                ty--
-                            }
-                        }
-                    }
+                    move(rope1, -1, 0)
+                    move(rope2, -1, 0)
 
                 case "U":
-                    hy++;
-                    if hy > ty + 1 {
-                        ty++
-                        if hx != tx {
-                            if hx > tx {
-                                tx++
-                            } else {
-                                tx--
-                            }
-                        }
-                    }
+                    move(rope1, 0, 1)
+                    move(rope2, 0, 1)
                 case "D":
-                    hy--;
-                    if hy < ty - 1 {
-                        ty--
-                        if hx != tx {
-                            if hx > tx {
-                                tx++
-                            } else {
-                                tx--
-                            }
-                        }
-                    }
+                    move(rope1, 0, -1)
+                    move(rope2, 0, -1)
                 default:
                     fmt.Println("invalid")
             }
-            seen[1000 * tx + ty] = 1
-            fmt.Printf("(%d, %d) (%d, %d)\n", hx, hy, tx, ty)
+            seen[rope1[1]] = 1
+            seen2[rope2[9]] = 1
+            fmt.Println(rope2)
         }
     }
     pt1 = len(seen)
+    pt2 = len(seen2)
     fmt.Println(pt1)
     fmt.Println(pt2)
 }
