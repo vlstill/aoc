@@ -18,26 +18,10 @@ func move(rope []Point, dx, dy int) {
     rope[0].x += dx
     rope[0].y += dy
     for i := 1; i < len(rope); i++ {
-        dx = utils.Signum(rope[i - 1].x - rope[i].x)
-        dy = utils.Signum(rope[i - 1].y - rope[i].y)
-        if utils.Abs(rope[i - 1].x - rope[i].x) > 1 {
-            rope[i].x += dx
-            if rope[i - 1].y != rope[i].y {
-                if rope[i - 1].y > rope[i].y {
-                    rope[i].y++
-                } else {
-                    rope[i].y--
-                }
-            }
-        } else if utils.Abs(rope[i - 1].y - rope[i].y) > 1 {
-            rope[i].y += dy
-            if rope[i - 1].x != rope[i].x {
-                if rope[i - 1].x > rope[i].x {
-                    rope[i].x++
-                } else {
-                    rope[i].x--
-                }
-            }
+        if utils.Abs(rope[i - 1].x - rope[i].x) > 1 ||
+           utils.Abs(rope[i - 1].y - rope[i].y) > 1 {
+            rope[i].x += utils.Signum(rope[i - 1].x - rope[i].x)
+            rope[i].y += utils.Signum(rope[i - 1].y - rope[i].y)
         }
     }
 }
