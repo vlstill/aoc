@@ -11,15 +11,14 @@ import (
 
 func crtdump(crt []bool) {
     for h := 0; h < 6; h++ {
-        ln := ""
         for _, v := range crt[40 * h : 40 * (h + 1)] {
             if v {
-                ln = ln + "#"
+                fmt.Print("#")
             } else {
-                ln = ln + "."
+                fmt.Print(".")
             }
         }
-        fmt.Println(ln)
+        fmt.Print("\n")
     }
 }
 
@@ -32,34 +31,34 @@ func stepcrt(crt []bool, cycle, regX int) {
     }
 }
 
+func strength(cycle, regX int) int {
+    if cycle % 40 != 20 {
+        return 0
+    }
+    return regX * cycle
+}
+
 func main() {
     scanner := bufio.NewScanner(os.Stdin)
     pt1 := 0
     regX := 1
-    prevX := 0
-    cycles := 1
+    cycle := 1
     crt := make([]bool, 40 * 6)
     for scanner.Scan() {
         line := scanner.Text()
         split := strings.Split(line, " ")
-        stepcrt(crt, cycles, regX)
-        prevX = regX
-        switch (split[0]) {
+        stepcrt(crt, cycle, regX)
+        switch split[0] {
             case "addx":
-                stepcrt(crt, cycles + 1, regX)
+                stepcrt(crt, cycle + 1, regX)
+                pt1 += strength(cycle + 1, regX)
                 val, _ := strconv.Atoi(split[1])
                 regX += val
-                cycles += 2
+                cycle += 2
             case "noop":
-                cycles += 1
+                cycle += 1
         }
-        strength := regX * cycles
-        if cycles % 40 == 20 || (split[0] == "addx" && cycles % 40 == 21)  {
-            if cycles % 40 == 21 {
-                strength = prevX * (cycles - 1)
-            }
-            pt1 += strength
-        }
+        pt1 += strength(cycle, regX)
     }
     fmt.Println(pt1)
     crtdump(crt)
