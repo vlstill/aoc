@@ -33,36 +33,28 @@ func crtdump(crt []bool) {
 }
 
 func stepcrt(crt []bool, cycle, regX int) {
+    cycle--  // AOC indexes are 1-based
     posX := cycle % 40
     pos := cycle % (6 * 40)
     if utils.Abs(posX - regX) <= 1 {
         crt[pos] = true
-    } /*else {
-        crt[pos] = false
-    }*/
-    fmt.Println("cycle", cycle)
-    crtdump(crt)
+    }
 }
 
 func main() {
     scanner := bufio.NewScanner(os.Stdin)
     pt1 := 0
     regX := 1
-    cycles := 0
+    prevX := 0
+    cycles := 1
     crt := make([]bool, 40 * 6)
     for scanner.Scan() {
         line := scanner.Text()
         split := strings.Split(line, " ")
         use(split)
-        strength := regX * cycles
-        if cycles % 40 == 20 || (split[0] == "addx" && cycles % 40 == 19)  {
-            if cycles % 40 == 19 {
-                strength += regX
-            }
-            fmt.Println(cycles, regX, strength)
-            pt1 += strength
-        }
         stepcrt(crt, cycles, regX)
+        prevX = regX
+        fmt.Println(line)
         switch (split[0]) {
             case "addx":
                 stepcrt(crt, cycles + 1, regX)
@@ -71,6 +63,14 @@ func main() {
                 cycles += 2
             case "noop":
                 cycles += 1
+        }
+        strength := regX * cycles
+        if cycles % 40 == 20 || (split[0] == "addx" && cycles % 40 == 21)  {
+            if cycles % 40 == 21 {
+                strength = prevX * (cycles - 1)
+            }
+            fmt.Println(cycles, regX, strength)
+            pt1 += strength
         }
     }
     fmt.Println("c", cycles)
