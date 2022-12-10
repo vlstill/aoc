@@ -7,31 +7,25 @@ import (
     "strings"
     "strconv"
     "aoc/utils"
+    "math/cmplx"
 )
 
-type Point struct {
-    x int
-    y int
-}
-
-func move(rope []Point, dx, dy int) {
-    rope[0].x += dx
-    rope[0].y += dy
+func move(rope []complex128, dir complex128) {
+    rope[0] += dir
     for i := 1; i < len(rope); i++ {
-        if utils.Abs(rope[i - 1].x - rope[i].x) > 1 ||
-           utils.Abs(rope[i - 1].y - rope[i].y) > 1 {
-            rope[i].x += utils.Signum(rope[i - 1].x - rope[i].x)
-            rope[i].y += utils.Signum(rope[i - 1].y - rope[i].y)
+        diff := rope[i - 1] - rope[i]
+        if cmplx.Abs(diff) > 1.5 {
+            rope[i] += complex(utils.Signum(real(diff)), utils.Signum(imag(diff)))
         }
     }
 }
 
 func main() {
     scanner := bufio.NewScanner(os.Stdin)
-    rope1 := []Point{Point{0, 0}, Point{0, 0}}
-    rope2 := make([]Point, 10)
-    seen1 := make(map[Point]int)
-    seen2 := make(map[Point]int)
+    rope1 := make([]complex128, 2)
+    rope2 := make([]complex128, 10)
+    seen1 := make(map[complex128]int)
+    seen2 := make(map[complex128]int)
     for scanner.Scan() {
         line := scanner.Text()
         split := strings.Split(line, " ")
@@ -39,18 +33,17 @@ func main() {
         for i := 0; i < cnt; i++ {
             switch split[0] {
                 case "R":
-                    move(rope1, 1, 0)
-                    move(rope2, 1, 0)
+                    move(rope1, 1)
+                    move(rope2, 1)
                 case "L":
-                    move(rope1, -1, 0)
-                    move(rope2, -1, 0)
-
+                    move(rope1, -1)
+                    move(rope2, -1)
                 case "U":
-                    move(rope1, 0, 1)
-                    move(rope2, 0, 1)
+                    move(rope1, 1i)
+                    move(rope2, 1i)
                 case "D":
-                    move(rope1, 0, -1)
-                    move(rope2, 0, -1)
+                    move(rope1, -1i)
+                    move(rope2, -1i)
             }
             seen1[rope1[1]] = 1
             seen2[rope2[9]] = 1
