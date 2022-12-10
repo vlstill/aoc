@@ -15,7 +15,7 @@ func crtdump(crt []bool) {
             if v {
                 fmt.Print("#")
             } else {
-                fmt.Print(".")
+                fmt.Print(" ")
             }
         }
         fmt.Print("\n")
