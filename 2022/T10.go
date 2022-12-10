@@ -9,14 +9,6 @@ import (
     "aoc/utils"
 )
 
-func use(_ interface{}) {
-    if 4 == 2 {
-        _ = utils.Min(4, 2)
-        _ = strings.Split("", "")
-        _, _ = strconv.Atoi("42")
-    }
-}
-
 func crtdump(crt []bool) {
     for h := 0; h < 6; h++ {
         ln := ""
@@ -29,7 +21,6 @@ func crtdump(crt []bool) {
         }
         fmt.Println(ln)
     }
-    fmt.Println("")
 }
 
 func stepcrt(crt []bool, cycle, regX int) {
@@ -51,10 +42,8 @@ func main() {
     for scanner.Scan() {
         line := scanner.Text()
         split := strings.Split(line, " ")
-        use(split)
         stepcrt(crt, cycles, regX)
         prevX = regX
-        fmt.Println(line)
         switch (split[0]) {
             case "addx":
                 stepcrt(crt, cycles + 1, regX)
@@ -69,11 +58,9 @@ func main() {
             if cycles % 40 == 21 {
                 strength = prevX * (cycles - 1)
             }
-            fmt.Println(cycles, regX, strength)
             pt1 += strength
         }
     }
-    fmt.Println("c", cycles)
     fmt.Println(pt1)
     crtdump(crt)
 }
