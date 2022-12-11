@@ -1,21 +1,13 @@
 package main
 
 import (
-//    "bufio"
+    "bufio"
     "fmt"
-//    "os"
+    "os"
     "strings"
     "strconv"
     "aoc/utils"
 )
-
-func use(_ interface{}) {
-    if 4 == 2 {
-        _ = utils.Min(4, 2)
-        _ = strings.Split("", "")
-        _, _ = strconv.Atoi("42")
-    }
-}
 
 type Monkey struct {
     Items []int64
@@ -27,7 +19,6 @@ type Monkey struct {
 }
 
 func dump(monkeys []Monkey) {
-    fmt.Println(monkeys)
     activity := []int64{}
     for _, m := range monkeys {
         activity = append(activity, m.Inspects)
@@ -36,41 +27,80 @@ func dump(monkeys []Monkey) {
     fmt.Println(activity[0] * activity[1])
 }
 
-func main() {
-    monkeys := []Monkey{
-        Monkey{[]int64{79, 98}, func(x int64) int64 { return x * 19; }, 23, 2, 3, 0},
-        Monkey{[]int64{54, 65, 75, 74}, func(x int64) int64 { return x + 6; }, 19, 2, 0, 0},
-        Monkey{[]int64{79, 60, 97}, func(x int64) int64 { return x * x; }, 13, 1, 3, 0},
-        Monkey{[]int64{74}, func(x int64) int64 { return x + 3; }, 17, 0, 1, 0}}
-
+func solve(monkeys []Monkey, steps int, divBy int64) {
     modulus := int64(1)
     for _, m := range monkeys {
         modulus *= m.TestDivBy
     }
-    fmt.Println(monkeys)
-    for i := 0; i < 10000; i++ {
+    for i := 0; i < steps; i++ {
         for i, m := range monkeys {
             monkeys[i].Inspects += int64(len(m.Items))
             items := m.Items
             monkeys[i].Items = []int64{}
             for _, worry := range items {
-                newWorry := m.Op(worry) % modulus
+                newWorry := (m.Op(worry) / divBy) % modulus
                 if newWorry % m.TestDivBy == 0 {
-//                    fmt.Println(worry, "@", newWorry, "goto", m.NextTrue)
                     monkeys[m.NextTrue].Items = append(monkeys[m.NextTrue].Items, newWorry)
                 } else {
-//                    fmt.Println(worry, "@", newWorry, "goto", m.NextFalse)
                     monkeys[m.NextFalse].Items = append(monkeys[m.NextFalse].Items, newWorry)
                 }
             }
-//            fmt.Println(monkeys)
-        }
-        if i == 19 || i == 0 {
-            dump(monkeys)
         }
     }
     dump(monkeys)
-//    fmt.Println(pt2)
+}
+
+func main() {
+    monkeys := []Monkey{}
+    scanner := bufio.NewScanner(os.Stdin)
+    for scanner.Scan() {
+        line := scanner.Text()
+        split := strings.Split(strings.Replace(strings.Trim(line, " "), "If ", "If", 1), " ")
+        if len(split) <= 1 {
+            continue
+        }
+        arg := split[len(split) - 1]
+        val, _ := strconv.Atoi(arg)
+        last := len(monkeys) - 1
+        switch strings.Trim(split[0], ":") {
+            case "Monkey":
+                monkeys = append(monkeys, Monkey{})
+            case "Starting":
+                splitC := strings.Split(line, ":")
+                arg := splitC[1]
+                itemsS := strings.Split(arg, ",")
+                items := []int64{}
+                for _, str := range itemsS {
+                    val, _ := strconv.Atoi(strings.Trim(str, " "))
+                    items = append(items, int64(val))
+                }
+                monkeys[last].Items = items
+            case "Operation":
+                op := split[len(split) - 2]
+                if arg == "old" {
+                    if op == "+" {
+                        monkeys[last].Op = func(old int64) int64 { return old + old }
+                    } else {
+                        monkeys[last].Op = func(old int64) int64 { return old * old }
+                    }
+                } else {
+                    if op == "+" {
+                        monkeys[last].Op = func(old int64) int64 { return old + int64(val) }
+                    } else {
+                        monkeys[last].Op = func(old int64) int64 { return old * int64(val) }
+                    }
+                }
+            case "Test":
+                monkeys[last].TestDivBy = int64(val)
+            case "Iftrue":
+                monkeys[last].NextTrue = int64(val)
+            case "Iffalse":
+                monkeys[last].NextFalse = int64(val)
+        }
+    }
+
+    solve(append([]Monkey{}, monkeys...), 20, 3)  // COPY!
+    solve(monkeys, 10000, 1)
 }
 
 // vim: expandtab tw=99 colorcolumn=100
