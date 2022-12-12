@@ -111,3 +111,26 @@ func MkSet[T comparable](vals []T) (out Set[T]) {
     }
     return
 }
+
+type Point struct {
+    X int
+    Y int
+}
+
+type Map[T any] [][]T
+
+func (self Map[T]) Xd() int {
+    return len(self[0])
+}
+
+func (self Map[T]) Yd() int {
+    return len(self)
+}
+
+func (self Map[T]) At(p Point) T {
+    return self[p.Y][p.X]
+}
+
+func (self Map[T]) In(p Point) bool {
+    return p.X >= 0 && p.Y >= 0 && p.X < self.Xd() && p.Y < self.Yd()
+}
