@@ -4,42 +4,45 @@ import (
     "bufio"
     "fmt"
     "os"
-    "strings"
-    "strconv"
     "aoc/utils"
 )
-
-func use(_ interface{}) {
-    if 4 == 2 {
-        _ = utils.Min(4, 2)
-        _ = strings.Split("", "")
-        _, _ = strconv.Atoi("42")
-    }
-}
 
 type Point struct {
     x int
     y int
 }
 
-func steps(mapa [][]int, from, to Point) int {
-    xd := len(mapa[0])
-    yd := len(mapa)
+type Map [][]int
+
+func (self Map) xd() int {
+    return len(self[0])
+}
+
+func (self Map) yd() int {
+    return len(self)
+}
+
+func (self Map) at(p Point) int {
+    return self[p.y][p.x]
+}
+
+func steps(map_ Map, from, to Point) int {
+    xd := map_.xd()
+    yd := map_.yd()
     seen := make(map[Point]int)
     seen[from] = 0
     queue := []Point{from}
 
-    mindi := 10000000000
+    mindist := xd * yd + 1
 
     for len(queue) > 0 {
         from := queue[0]
         distance := seen[from]
-        // fmt.Println(from, distance, seen)
         if from == to {
-            mindi = utils.Min(mindi, distance)
+            mindist = utils.Min(mindist, distance)
         }
         queue = queue[1:]
-        h := mapa[from.y][from.x]
+        h := map_.at(from)
         for _, dx := range []int{-1, 0, 1} {
             for _, dy := range []int{-1, 0, 1} {
                 if utils.Abs(dx) + utils.Abs(dy) != 1 {
@@ -47,16 +50,13 @@ func steps(mapa [][]int, from, to Point) int {
                 }
                 nxt := Point{from.x + dx, from.y + dy}
                 if nxt.x < 0 || nxt.x >= xd || nxt.y < 0 || nxt.y >= yd {
-                    // fmt.Println("skip", nxt, "out")
                     continue
                 }
-                hnxt := mapa[nxt.y][nxt.x]
+                hnxt := map_.at(nxt)
                 if hnxt - h > 1 {
-                    // fmt.Println("skip", nxt, "h")
                     continue
                 }
                 if _, ok := seen[nxt]; ok {
-                    // fmt.Println("skip", nxt, "seen")
                     continue
                 }
                 queue = append(queue, nxt)
@@ -64,16 +64,14 @@ func steps(mapa [][]int, from, to Point) int {
             }
         }
     }
-    return mindi
+    return mindist
 }
 
 func main() {
     scanner := bufio.NewScanner(os.Stdin)
-    pt1 := 0
-    pt2 := 10000000000
     start := Point{}
     end := Point{}
-    mapa := [][]int{}
+    map_ := Map{}
     py := 0
     for scanner.Scan() {
         px := 0
@@ -92,16 +90,17 @@ func main() {
             px++
         }
         py++
-        mapa = append(mapa, out)
+        map_ = append(map_, out)
     }
-    pt1 = steps(mapa, start, end)
-    fmt.Println(mapa, start, end)
-    fmt.Println(pt1)
+    fmt.Println(steps(map_, start, end))
 
-    for x := 0; x < len(mapa[0]); x++ {
-        for y := 0; y < len(mapa); y++ {
-            if mapa[y][x] == 0 {
-                pt2 = utils.Min(pt2, steps(mapa, Point{x, y}, end))
+    xd := map_.xd()
+    yd := map_.yd()
+    pt2 := xd * yd + 1
+    for x := 0; x < xd; x++ {
+        for y := 0; y < yd; y++ {
+            if map_[y][x] == 0 {
+                pt2 = utils.Min(pt2, steps(map_, Point{x, y}, end))
             }
         }
     }
