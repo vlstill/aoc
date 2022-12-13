@@ -4,19 +4,10 @@ import (
     "bufio"
     "fmt"
     "os"
-    "strings"
     "strconv"
     "aoc/utils"
     "sort"
 )
-
-func use(_ interface{}) {
-    if 4 == 2 {
-        _ = utils.Min(4, 2)
-        _ = strings.Split("", "")
-        _, _ = strconv.Atoi("42")
-    }
-}
 
 type NestedList interface {
     cmp(NestedList) int
