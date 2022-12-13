@@ -18,16 +18,17 @@ func use(_ interface{}) {
     }
 }
 
-type List struct {
-    IsVal bool
-    Val int
-    List []List
+type NestedList interface {
+    cmp(NestedList) int
 }
 
-func parse(str string) List {
+type Val int
+type List []NestedList
+
+func parse(str string) NestedList {
     if str[0] == '[' {
         depth := 0
-        out := List{false, 0, []List{}}
+        out := List{}
         start := 1
 
         for i, v := range str {
@@ -37,47 +38,55 @@ func parse(str string) List {
                 depth--
                 if depth == 0 {
                     if start != i {
-                        out.List = append(out.List, parse(str[start:i]))
+                        out = append(out, parse(str[start:i]))
                     }
                     break
                 }
             }
             if depth == 1 && v == ',' {
-                out.List = append(out.List, parse(str[start:i]))
+                out = append(out, parse(str[start:i]))
                 start = i + 1
             }
         }
         return out
     } else {
         v, _ := strconv.Atoi(str)
-        return List{true, v, nil}
+        return Val(v)
     }
 }
 
-func cmp(left, right List) int {
-    if left.IsVal && right.IsVal {
-        return left.Val - right.Val
+func (left Val) cmp(right NestedList) int {
+    if rightVal, ok := right.(Val); ok {
+        return int(left) - int(rightVal)
     }
-    if left.IsVal {
-        left = List{false, 0, []List{List{true, left.Val, nil}}}
+    if rightList, ok := right.(List); ok {
+        leftList := List{left}
+        return leftList.cmp(rightList)
     }
-    if right.IsVal {
-        right = List{false, 0, []List{List{true, right.Val, nil}}}
+    panic("invalid NestedList")
+}
+
+func (left List) cmp(right NestedList) int {
+    if rightVal, ok := right.(Val); ok {
+        right = List{rightVal}
     }
-    for i := 0; i < utils.Max(len(left.List), len(right.List)); i++ {
-        if len(left.List) <= i {
-            return -1
+    if rightList, ok := right.(List); ok {
+        for i := 0; i < utils.Max(len(left), len(rightList)); i++ {
+            if len(left) <= i {
+                return -1
+            }
+            if len(rightList) <= i {
+                return 1
+            }
+            if v := left[i].cmp(rightList[i]); v < 0 {
+                return v
+            } else if v > 0 {
+                return v
+            }
         }
-        if len(right.List) <= i {
-            return 1
-        }
-        if v := cmp(left.List[i], right.List[i]); v < 0 {
-            return v
-        } else if v > 0 {
-            return v
-        }
+        return 0
     }
-    return 0
+    panic("invalid NestedList")
 }
 
 func main() {
@@ -87,14 +96,14 @@ func main() {
     idx := 0
     div0 := parse("[[2]]")
     div1 := parse("[[6]]")
-    packets := []List{div0, div1}
+    packets := []NestedList{div0, div1}
     for scanner.Scan() {
         left := parse(scanner.Text())
         scanner.Scan()
         right := parse(scanner.Text())
         packets = append(packets, left, right)
         idx++
-        if cmp(left, right) < 0 {
+        if left.cmp(right) < 0 {
             pt1 += idx
         }
         if !scanner.Scan() {  // sep
@@ -103,9 +112,9 @@ func main() {
     }
     fmt.Println(pt1)
 
-    sort.Slice(packets, func(i, j int) bool { return cmp(packets[i], packets[j]) < 0 })
+    sort.Slice(packets, func(i, j int) bool { return packets[i].cmp(packets[j]) < 0 })
     for i, v := range packets {
-        if cmp(div0, v) == 0 || cmp(div1, v) == 0 {
+        if div0.cmp(v) == 0 || div1.cmp(v) == 0 {
             pt2 *= i + 1
         }
     }
