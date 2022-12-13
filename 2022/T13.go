@@ -25,7 +25,6 @@ type List struct {
 }
 
 func parse(str string) List {
-//    fmt.Println("parse", str, len(str))
     if str[0] == '[' {
         depth := 0
         out := List{false, 0, []List{}}
@@ -56,7 +55,6 @@ func parse(str string) List {
 }
 
 func cmp(left, right List) int {
-    fmt.Println("cmp", left, right)
     if left.IsVal && right.IsVal {
         return left.Val - right.Val
     }
@@ -66,7 +64,6 @@ func cmp(left, right List) int {
     if right.IsVal {
         right = List{false, 0, []List{List{true, right.Val, nil}}}
     }
-    fmt.Println("cmp-lst", left, right)
     for i := 0; i < utils.Max(len(left.List), len(right.List)); i++ {
         if len(left.List) <= i {
             return -1
