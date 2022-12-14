@@ -3,6 +3,7 @@ package utils
 import (
     "golang.org/x/exp/constraints"
     "sort"
+    "fmt"
 )
 
 type OrdNum interface {
@@ -131,6 +132,50 @@ func (self Map[T]) At(p Point) T {
     return self[p.Y][p.X]
 }
 
+func (self Map[T]) Set(p Point, val T) {
+    self[p.Y][p.X] = val
+}
+
 func (self Map[T]) In(p Point) bool {
     return p.X >= 0 && p.Y >= 0 && p.X < self.Xd() && p.Y < self.Yd()
+}
+
+func (self Map[T]) FillLine(from, to Point, val T) {
+    dx := Signum(to.X - from.X)
+    dy := Signum(to.Y - from.Y)
+//    fmt.Println("FillLine", from, "->", to, "=", val, ":", dx, dy)
+    for from.X != to.X || from.Y != to.Y {
+//        fmt.Println("FillLine", from, "=", val)
+        self.Set(from, val)
+        from = Point{from.X + dx, from.Y + dy}
+    }
+    self.Set(from, val)
+}
+
+func MakeMap[T any](xdim, ydim int, fill T) Map[T] {
+    map_ := make([][]T, ydim)
+    for i, _ := range map_ {
+        map_[i] = make([]T, xdim)
+        for j, _ := range map_[i] {
+            map_[i][j] = fill
+        }
+    }
+    return map_
+}
+
+func (self Map[T]) DumpSlice(from, to Point) {
+    for y := from.Y; y <= to.Y; y++ {
+        for x := from.X; x <= to.X; x++ {
+            fmt.Print(self.At(Point{x, y}))
+        }
+        fmt.Println()
+    }
+}
+
+func (self Map[T]) Clone() Map[T] {
+    out := Map[T](make([][]T, len(self)))
+    for i, v := range self {
+        out[i] = append([]T{}, v...)
+    }
+    return out
 }
